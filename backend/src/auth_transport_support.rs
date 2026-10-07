@@ -3,8 +3,6 @@ use super::*;
 #[derive(Debug, Deserialize)]
 struct LoginPayload {
     password: Option<String>,
-    #[serde(alias = "hcaptchaToken", alias = "hcaptcha_token")]
-    hcaptcha_token: Option<String>,
 }
 
 pub(crate) async fn handle_auth_http(
@@ -78,11 +76,7 @@ pub(crate) async fn handle_auth_http(
                 Json(json!({
                     "authenticated": auth.is_some(),
                     "activeProfileId": active_profile_id,
-                    "role": role,
-                    "hcaptcha": {
-                        "enabled": state.config.hcaptcha_enabled(),
-                        "siteKey": state.config.hcaptcha_site_key(),
-                    }
+                    "role": role
                 })),
             )
                 .into_response())
@@ -122,7 +116,6 @@ async fn auth_login(
     };
     let payload: LoginPayload = serde_json::from_slice(&body).unwrap_or(LoginPayload {
         password: None,
-        hcaptcha_token: None,
     });
     let password = payload.password.unwrap_or_default();
     let forwarded_ip = if forwarded_headers_allowed(&state.config, peer_addr) {
@@ -146,86 +139,6 @@ async fn auth_login(
             StatusCode::TOO_MANY_REQUESTS,
             "Too many login attempts. Try again later.",
         ));
-    }
-
-    if state.config.hcaptcha_enabled() {
-        let Some(hcaptcha_secret_key) = state.config.hcaptcha_secret_key() else {
-            return Ok(json_error(
-                StatusCode::SERVICE_UNAVAILABLE,
-                "hCaptcha is not fully configured.",
-            ));
-        };
-        let Some(hcaptcha_token) = payload
-            .hcaptcha_token
-            .as_deref()
-            .map(str::trim)
-            .filter(|value| !value.is_empty())
-        else {
-            return Ok(json_error(
-                StatusCode::BAD_REQUEST,
-                "Complete the hCaptcha challenge before signing in.",
-            ));
-        };
-
-        let mut verification_payload = vec![
-            ("secret", hcaptcha_secret_key.to_string()),
-            ("response", hcaptcha_token.to_string()),
-        ];
-        if let Some(remote_ip) = remote_ip {
-            verification_payload.push(("remoteip", remote_ip.to_string()));
-        }
-
-        let verification_response = state
-            .http
-            .post("https://api.hcaptcha.com/siteverify")
-            .form(&verification_payload)
-            .send()
-            .await
-            .map_err(|error| {
-                tracing::warn!("failed to verify hcaptcha: {error}");
-                "Failed to verify hCaptcha."
-            })?;
-
-        if !verification_response.status().is_success() {
-            tracing::warn!(
-                status = %verification_response.status(),
-                "hcaptcha verification request returned a non-success status"
-            );
-            return Ok(json_error(
-                StatusCode::BAD_GATEWAY,
-                "Failed to verify hCaptcha.",
-            ));
-        }
-
-        let verification_result: Value = verification_response.json().await.map_err(|error| {
-            tracing::warn!("failed to parse hcaptcha verification response: {error}");
-            "Failed to verify hCaptcha."
-        })?;
-        let verification_ok = verification_result
-            .get("success")
-            .and_then(Value::as_bool)
-            .unwrap_or(false);
-
-        if !verification_ok {
-            record_login_failure(&state, &identifier).await;
-            let _ = append_audit_log(
-                &state.config,
-                AuditLogEntry {
-                    id: Uuid::new_v4().to_string(),
-                    at: now_unix_ms(),
-                    role: "anonymous".to_string(),
-                    method: "auth/login".to_string(),
-                    target: None,
-                    ok: false,
-                    error: Some("Failed hCaptcha verification.".to_string()),
-                },
-            )
-            .await;
-            return Ok(json_error(
-                StatusCode::UNAUTHORIZED,
-                "Complete the hCaptcha challenge before signing in.",
-            ));
-        }
     }
 
     let Some(role) =
