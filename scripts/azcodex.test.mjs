@@ -62,6 +62,16 @@ test("production env selects the Foundry profile explicitly", async () => {
   assert.match(text, /"codexHome":"\/home\/frappe\/\.azcodex"/u);
 });
 
+
+test("production systemd initializes Foundry before the WebUI", async () => {
+  const serviceFile = new URL("../deploy/systemd/az-codex.service", import.meta.url);
+  const text = await fs.readFile(serviceFile, "utf8");
+  const setup = "ExecStartPre=/usr/bin/node /opt/az-codex/bin/azcodex.mjs setup";
+  const start = "ExecStart=/usr/bin/node /opt/az-codex/bin/codex-webui.mjs";
+  assert.match(text, new RegExp(setup.replace(/[.*+?^$\{\}()|[\]\\]/g, "\\$&"), "u"));
+  assert.ok(text.indexOf(setup) < text.indexOf(start));
+});
+
 test("buildConfigToml uses the foundry provider and never embeds the key", () => {
   const toml = buildConfigToml({ endpoint: "https://r.openai.azure.com", apiKeyEnv: "AZURE_FOUNDRY_API_KEY", model: "my-dep", apiVersion: "" });
   assert.match(toml, /model_provider = "foundry"/);
