@@ -8,12 +8,14 @@ import YAML from "yaml";
 import {
   buildConfigToml,
   ensureAzcodexHome,
+  foundrySettings,
   normalizeBaseUrl,
   registerWebuiProfiles,
   installChartInstructions,
   removeChartInstructions,
   CHARTS_START,
-  MANAGED_MARKER
+  MANAGED_MARKER,
+  validateFoundrySettings
 } from "./azcodex-lib.mjs";
 
 test("normalizeBaseUrl handles v1 and classic API", () => {
@@ -22,6 +24,42 @@ test("normalizeBaseUrl handles v1 and classic API", () => {
   assert.equal(normalizeBaseUrl("https://r.openai.azure.com", "2025-04-01-preview"), "https://r.openai.azure.com/openai");
   assert.throws(() => normalizeBaseUrl(""));
   assert.throws(() => normalizeBaseUrl("http://r.example.com"));
+});
+
+
+test("Foundry deployment is explicit and credentials are validated", () => {
+  const settings = foundrySettings({
+    AZURE_FOUNDRY_ENDPOINT: "https://r.openai.azure.com",
+    AZURE_FOUNDRY_API_KEY_ENV: "FOUND_KEY",
+    FOUND_KEY: "secret",
+    AZURE_FOUNDRY_MODEL: "az-model-sol"
+  });
+  assert.equal(settings.model, "az-model-sol");
+  assert.equal(settings.apiKeyEnv, "FOUND_KEY");
+  assert.equal(
+    validateFoundrySettings(settings, { FOUND_KEY: "secret" }),
+    settings
+  );
+
+  const missingModel = foundrySettings({
+    AZURE_FOUNDRY_ENDPOINT: "https://r.openai.azure.com",
+    AZURE_FOUNDRY_API_KEY: "secret"
+  });
+  assert.equal(missingModel.model, "");
+  assert.throws(() => buildConfigToml(missingModel), /AZURE_FOUNDRY_MODEL/u);
+  assert.throws(
+    () => validateFoundrySettings(missingModel, { AZURE_FOUNDRY_API_KEY: "secret" }),
+    /AZURE_FOUNDRY_MODEL/u
+  );
+});
+
+test("production env selects the Foundry profile explicitly", async () => {
+  const envFile = new URL("../deploy/production.env.example", import.meta.url);
+  const text = await fs.readFile(envFile, "utf8");
+  assert.match(text, /^CODEX_WEBUI_DEFAULT_PROFILE_ID=azcodex$/mu);
+  assert.match(text, /"id":"codex"/u);
+  assert.match(text, /"id":"azcodex"/u);
+  assert.match(text, /"codexHome":"\/home\/frappe\/\.azcodex"/u);
 });
 
 test("buildConfigToml uses the foundry provider and never embeds the key", () => {
