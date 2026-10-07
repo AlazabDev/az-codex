@@ -24,6 +24,8 @@ test("deployment helpers use pnpm and fixed production paths", async () => {
   assert.match(deploy, /node --env-file='\$ENV_FILE'/u);
   assert.match(service, /WorkingDirectory=\/home\/frappe\/az-codex/u);
   assert.match(service, /--env-file=\/home\/frappe\/az-codex\/\.env/u);
+  assert.match(service, /ExecStart=\/home\/frappe\/az-codex\/backend\/target\/release\/backend/u);
+  assert.match(deploy, /cargo build --release --manifest-path backend\/Cargo\.toml --bin backend/u);
 });
 
 test("first TLS bootstrap never exposes the app over plaintext HTTP", async () => {
