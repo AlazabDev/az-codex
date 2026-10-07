@@ -132,7 +132,6 @@
     GitCommit,
     GitOpenRequest,
     GlobalStreamEvent,
-    LoginHcaptchaConfig,
     NotificationSettings,
     PendingServerRequest,
     PromptPreset,
@@ -340,10 +339,6 @@
   let loginPassword = $state("");
   let loginBusy = $state(false);
   let loginMessage = $state("");
-  let loginHcaptcha = $state<LoginHcaptchaConfig>({ enabled: false, siteKey: null });
-  let loginHcaptchaToken = $state("");
-  let loginHcaptchaWidgetId = $state<string | number | null>(null);
-  let loginHcaptchaContainer = $state<HTMLDivElement | null>(null);
   let draft = $state("");
   let draftAttachments = $state<AttachmentRecord[]>([]);
   let fileMentionTrigger = $state<FileMentionTrigger | null>(null);
@@ -591,7 +586,6 @@
   const sessionSavedFilterParamKey = "sessionSavedFilter";
   const notificationPromptStorageKey = "codex-webui.notifications.permission-prompted";
   const sendOnEnterPreferenceStorageKey = "codex-webui.composer.send-on-enter";
-  let loginHcaptchaScriptPromise: Promise<void> | null = null;
 
   const ui = $derived.by(() => {
     const _locale = $localeSignal;
@@ -607,8 +601,6 @@
       signingIn: m.signing_in(),
       enterPassword: m.enter_password(),
       loginFailed: m.login_failed(),
-      completeHcaptcha: m.complete_hcaptcha(),
-      hcaptchaLoadFailed: m.hcaptcha_load_failed(),
       installApp: m.install_app(),
       installingApp: m.installing_app(),
       appInstalled: m.app_installed(),
@@ -3362,83 +3354,6 @@
   });
 
   $effect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-    if (authenticated !== false || !loginHcaptcha.enabled || !loginHcaptcha.siteKey || !loginHcaptchaContainer) {
-      return;
-    }
-    if (loginHcaptchaWidgetId !== null) {
-      return;
-    }
-
-    let cancelled = false;
-    const renderWidget = async () => {
-      try {
-        if (!window.hcaptcha) {
-          if (!loginHcaptchaScriptPromise) {
-            loginHcaptchaScriptPromise = new Promise<void>((resolve, reject) => {
-              const existingScript = document.querySelector<HTMLScriptElement>('script[data-codex-webui-hcaptcha="true"]');
-              if (existingScript) {
-                if (existingScript.dataset.loaded === "true") {
-                  resolve();
-                  return;
-                }
-                existingScript.addEventListener("load", () => resolve(), { once: true });
-                existingScript.addEventListener("error", () => reject(new Error("Failed to load hCaptcha.")), { once: true });
-                return;
-              }
-
-              const script = document.createElement("script");
-              script.src = "https://js.hcaptcha.com/1/api.js?render=explicit";
-              script.async = true;
-              script.defer = true;
-              script.dataset.codexWebuiHcaptcha = "true";
-              script.addEventListener("load", () => {
-                script.dataset.loaded = "true";
-                resolve();
-              }, { once: true });
-              script.addEventListener("error", () => reject(new Error("Failed to load hCaptcha.")), { once: true });
-              document.head.appendChild(script);
-            });
-          }
-          await loginHcaptchaScriptPromise;
-        }
-
-        const siteKey = loginHcaptcha.siteKey;
-        if (cancelled || !window.hcaptcha || !loginHcaptchaContainer || !siteKey) {
-          return;
-        }
-
-        loginHcaptchaWidgetId = window.hcaptcha.render(loginHcaptchaContainer, {
-          sitekey: siteKey,
-          theme: resolvedTheme === "dark" ? "dark" : "light",
-          callback: (token) => {
-            loginHcaptchaToken = token;
-            loginMessage = "";
-          },
-          "expired-callback": () => {
-            loginHcaptchaToken = "";
-          },
-          "error-callback": () => {
-            loginHcaptchaToken = "";
-          }
-        });
-      } catch {
-        if (!cancelled) {
-          loginMessage = ui.hcaptchaLoadFailed;
-        }
-      }
-    };
-
-    void renderWidget();
-
-    return () => {
-      cancelled = true;
-    };
-  });
-
-  $effect(() => {
     const scheduledFor = config?.startup.scheduledShutdown?.scheduledFor ?? null;
     if (!scheduledFor) {
       return;
@@ -6087,8 +6002,6 @@
     runtime = null;
     notifications = [];
     loginBusy = false;
-    loginHcaptchaToken = "";
-    loginHcaptchaWidgetId = null;
     notificationsBusy = false;
     resetRealtimeConnectionForAuthChange();
   }
@@ -6122,7 +6035,6 @@
       const authSession = await api.getAuthSession();
       activeProfileId = authSession.activeProfileId ?? "default";
       api.setDefaultProfileId(activeProfileId);
-      loginHcaptcha = authSession.hcaptcha ?? { enabled: false, siteKey: null };
       if (!authSession.authenticated) {
         clearWorkspaceForLoggedOut();
         loading = false;
@@ -10442,16 +10354,12 @@
       loginMessage = ui.enterPassword;
       return;
     }
-    if (loginHcaptcha.enabled && !loginHcaptchaToken) {
-      loginMessage = ui.completeHcaptcha;
-      return;
-    }
 
     loginBusy = true;
     loginMessage = "";
 
     try {
-      const loginResult = await api.login(loginPassword.trim(), loginHcaptchaToken || null);
+      const loginResult = await api.login(loginPassword.trim());
       resetRealtimeConnectionForAuthChange();
       loginPassword = "";
       authenticated = true;
@@ -10462,10 +10370,6 @@
       authenticated = false;
       loginMessage = error instanceof Error ? error.message : ui.loginFailed;
     } finally {
-      if (loginHcaptcha.enabled && loginHcaptchaWidgetId !== null) {
-        loginHcaptchaToken = "";
-        window.hcaptcha?.reset?.(loginHcaptchaWidgetId);
-      }
       loginBusy = false;
     }
   }
@@ -14507,12 +14411,9 @@
     {#if authenticated === false}
       <AuthLoginOverlay
         activeLocale={$activeLocale}
-        bind:loginHcaptchaContainer={loginHcaptchaContainer}
         bind:loginPassword={loginPassword}
         {localeOptions}
         {loginBusy}
-        {loginHcaptcha}
-        {loginHcaptchaToken}
         {loginMessage}
         {ui}
         onLocaleChange={(locale) => updateLocale(locale as (typeof localeOptions)[number]["value"])}
@@ -17155,12 +17056,6 @@
 
   :global(:root[data-theme="dark"]) .auth-dialog-select,
   :global(:root[data-theme="dark"]) .auth-dialog-input,
-  :global(:root[data-theme="dark"]) .auth-dialog-hcaptcha {
-    border-color: rgba(71, 85, 105, 0.44) !important;
-    background: rgba(15, 23, 42, 0.9) !important;
-    color: #f8fafc !important;
-    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.06);
-  }
 
   :global(:root[data-theme="dark"]) .auth-dialog-input::placeholder {
     color: #64748b !important;
