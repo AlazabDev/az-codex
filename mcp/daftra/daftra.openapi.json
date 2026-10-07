@@ -464,7 +464,7 @@
                   },
                   "client_secret": {
                     "description": "The API application's client secret.",
-                    "example": "jCfy6cMh1X6NTxR3OWLuvEFa0si5uZKr05UeoAEs",
+                    "example": "{{client_secret}}",
                     "type": "string"
                   },
                   "username": {
@@ -499,7 +499,7 @@
               "example": {
                 "grant_type": "password",
                 "client_id": "1",
-                "client_secret": "jCfy6cMh1X6NTxR3OWLuvEFa0si5uZKr05UeoAEs",
+                "client_secret": "{{client_secret}}",
                 "username": "owner@example.com",
                 "password": "{{password}}",
                 "scope": "",
