@@ -27,7 +27,7 @@ pnpm release:check
 
 ## Secrets
 
-Copy `deploy/production.env.example` to `/etc/az-codex/az-codex.env`, set real values on the server, and protect it with mode `600`.
+Copy `deploy/production.env.example` to `/etc/az-codex/az-codex.env`, set real values on the server, and protect it as `root:frappe` with mode `0640`.
 
 Generate password hashes with:
 
@@ -89,6 +89,97 @@ mcp         -> pnpm mcp:doctor
 
 There is no arbitrary command parameter. The backend resolves the application root from `CODEX_WEBUI_PROJECT_ROOT`, enforces per-check timeouts, bounds captured output, audits the WebSocket mutation, and rejects non-owner callers.
 
+## First deployment
+
+The first deployment uses the checked-in deployment helpers and does not expose the login over plaintext HTTP.
+
+### 1. Clone the application
+
+```bash
+sudo install -d -o frappe -g frappe -m 0755 /opt/az-codex
+sudo -u frappe -H git clone https://github.com/AlazabDev/az-codex.git /opt/az-codex
+cd /opt/az-codex
+```
+
+If the directory already contains the repository, do not clone it again.
+
+### 2. Install system files and HTTP-only ACME bootstrap
+
+```bash
+cd /opt/az-codex
+sudo bash deploy/scripts/install-system.sh
+```
+
+This installs the systemd units and either:
+
+- the final TLS Nginx configuration when a certificate already exists, or
+- the ACME-only bootstrap configuration when this is the first certificate.
+
+The bootstrap server returns `404` for every non-ACME HTTP request, so the login is never exposed over plaintext HTTP.
+
+### 3. Populate production secrets
+
+Edit:
+
+```bash
+sudo nano /etc/az-codex/az-codex.env
+```
+
+Then enforce the production permissions:
+
+```bash
+sudo chown root:frappe /etc/az-codex/az-codex.env
+sudo chmod 0640 /etc/az-codex/az-codex.env
+```
+
+Required values include the password hashes, session secret, hCaptcha pair, and the Microsoft Foundry endpoint/API key/deployment.
+
+### 4. Run the complete preflight
+
+```bash
+cd /opt/az-codex
+sudo bash deploy/scripts/preflight.sh
+```
+
+Do not continue until this command finishes with:
+
+```text
+== Preflight passed ==
+```
+
+### 5. Deploy and start the service
+
+```bash
+cd /opt/az-codex
+sudo bash deploy/scripts/deploy.sh
+```
+
+The deploy helper records the previous Git commit, fast-forwards `main`, runs the full release gate, validates Foundry and the production environment, installs the current systemd units, restarts the service, and requires both local health endpoints to pass.
+
+### 6. Obtain and activate TLS
+
+Install Certbot if it is not already installed, then run:
+
+```bash
+cd /opt/az-codex
+sudo CERTBOT_EMAIL=admin@alazab.com bash deploy/scripts/enable-tls.sh
+```
+
+The script obtains the first certificate through the webroot challenge, installs the final TLS Nginx configuration, validates Nginx, reloads it, and checks the public health endpoint.
+
+### 7. Final status
+
+```bash
+cd /opt/az-codex
+sudo bash deploy/scripts/status.sh
+```
+
+The public application should now be available at:
+
+```text
+https://codex.alazab.com
+```
+
 ## systemd
 
 Install the units:
@@ -133,42 +224,38 @@ curl -I https://codex.alazab.com/
 
 ## Update procedure
 
-Deploy only after CI passes.
+Deploy only after CI passes. Production updates use one command:
 
 ```bash
 cd /opt/az-codex
-git fetch origin
-git checkout main
-git pull --ff-only origin main
-pnpm install --frozen-lockfile
-pnpm release:check
-
-set -a
-source /etc/az-codex/az-codex.env
-set +a
-pnpm prod:doctor
-
-sudo systemctl reload az-codex.service
-curl -fsS http://127.0.0.1:4173/healthz
+sudo bash deploy/scripts/deploy.sh
 ```
+
+The helper refuses a dirty production tree, records the previous release SHA, fast-forwards `main`, runs `pnpm release:check`, performs the live Foundry and production doctors, installs the current systemd units, restarts the service and requires both `/healthz` and `/readyz` to pass.
 
 The WebUI restart path uses Codex app-server handoff when available so active sessions can reconnect.
 
 ## Rollback
 
-Record the previous commit before updating:
+Every successful deploy stores the previous commit at:
 
-```bash
-git rev-parse HEAD
+```text
+/home/frappe/.azcodex/deploy/previous-release
 ```
 
-If a deployment fails after build validation, check out the previous known-good commit, rebuild, and reload the service:
+Rollback to it with:
 
 ```bash
-git checkout <known-good-commit>
-pnpm install --frozen-lockfile
-pnpm build
-sudo systemctl reload az-codex.service
+cd /opt/az-codex
+sudo bash deploy/scripts/rollback.sh
 ```
+
+Or rollback to an explicit known-good commit:
+
+```bash
+sudo bash deploy/scripts/rollback.sh <commit-sha>
+```
+
+Rollback rebuilds the selected revision, validates the package and Foundry path, restarts the service, and requires both local health endpoints to pass.
 
 Do not roll back the Frappe database with Git. Frappe schema/data changes must follow the bench backup/patch/migration policy separately.
