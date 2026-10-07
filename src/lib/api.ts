@@ -189,10 +189,10 @@ export const api = {
     });
   },
 
-  login(password: string, hcaptchaToken: string | null = null) {
+  login(password: string) {
     return request<{ ok: true; role?: AuthSessionPayload["role"] }>(apiPath("/auth/login"), {
       method: "POST",
-      body: JSON.stringify({ password, hcaptchaToken })
+      body: JSON.stringify({ password })
     });
   },
 
