@@ -19,12 +19,12 @@
   "auth": {
     "type": "x-api-key",
     "header_name": "x-api-key",
-    "test_key": "uf_test_0ziP7jDz2WtMtUhugDwlfis2EhW7BSTX5zqQ54Xu5E",
+    "test_key": "${UBERFIX_API_KEY}",
     "warning": "هذا مفتاح اختبار - لا تستخدمه في الإنتاج"
   },
   "variables": {
     "GATEWAY": "https://zrrffsjbfkphridqyais.supabase.co/functions/v1/api",
-    "API_KEY": "uf_test_0ziP7jDz2WtMtUhugDwlfis2EhW7BSTX5zqQ54Xu5E",
+    "API_KEY": "${UBERFIX_API_KEY}",
     "CLIENT_NAME": "أبراهيم رجب - فرع أبوعوف",
     "CLIENT_PHONE": "01004006620",
     "SERVICE_TYPE": "electrical",

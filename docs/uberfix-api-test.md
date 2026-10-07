@@ -6,7 +6,7 @@
 
 ```bash
 export GATEWAY="https://zrrffsjbfkphridqyais.supabase.co/functions/v1/maintenance-gateway"
-export API_KEY="0639988287e667c4c7801e34065105f3b80303c6d8d3c2f6dfee45cc7314aebe"
+export API_KEY="${UBERFIX_API_KEY}"
 ```
 
 ---
