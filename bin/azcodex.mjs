@@ -61,6 +61,16 @@ function requireFoundry(settings) {
   return validateFoundrySettings(settings, process.env);
 }
 
+function redactSecrets(value, settings) {
+  let text = String(value ?? "");
+  const names = [settings.apiKeyEnv, "AZURE_FOUNDRY_API_KEY"];
+  for (const name of names) {
+    const secret = String(process.env[name] ?? "");
+    if (secret) text = text.split(secret).join("[REDACTED]");
+  }
+  return text;
+}
+
 function liveFoundryProbe(settings) {
   const marker = "AZCODEX_FOUNDRY_OK";
   const result = spawnSync(
@@ -78,7 +88,7 @@ function liveFoundryProbe(settings) {
     ok: result.status === 0 && output.includes(marker),
     status: result.status,
     timedOut: Boolean(result.error?.code === "ETIMEDOUT"),
-    detail: output.split(/\r?\n/u).slice(-8).join("\n")
+    detail: redactSecrets(output, settings).split(/\r?\n/u).slice(-8).join("\n")
   };
 }
 
