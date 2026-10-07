@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-APP_DIR="${APP_DIR:-/opt/az-codex}"
+APP_DIR="${APP_DIR:-/home/frappe/az-codex}"
 DOMAIN="${DOMAIN:-codex.alazab.com}"
 CERTBOT_EMAIL="${CERTBOT_EMAIL:-}"
 
