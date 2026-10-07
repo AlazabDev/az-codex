@@ -1553,7 +1553,7 @@ async fn health_readiness_and_metrics_endpoints_report_gateway_state() {
     assert!(csp.contains("frame-ancestors 'none'"));
     assert!(csp.contains("script-src 'self'"));
     assert!(!csp.contains("script-src 'self' 'unsafe-inline'"));
-    assert!(csp.contains("connect-src 'self' https://hcaptcha.com https://*.hcaptcha.com;"));
+    assert!(csp.contains("connect-src 'self';"));
     assert!(csp.contains("img-src 'self' data: blob:;"));
     assert!(!csp.contains("ws:"));
     assert!(!csp.contains("wss:"));
@@ -3778,7 +3778,7 @@ async fn static_asset_handler_rewrites_base_path_and_uses_spa_fallbacks() {
     assert!(content_security_policy.contains("img-src 'self' data: blob:;"));
     assert!(
         content_security_policy
-            .contains("connect-src 'self' https://hcaptcha.com https://*.hcaptcha.com;")
+            .contains("connect-src 'self';")
     );
     assert!(!content_security_policy.contains("ws:"));
     assert!(!content_security_policy.contains("wss:"));
