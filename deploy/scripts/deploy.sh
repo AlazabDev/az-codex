@@ -44,11 +44,8 @@ sudo -u "$RUN_AS" -H bash -lc "
   git pull --ff-only origin '$BRANCH'
   pnpm install --frozen-lockfile
   pnpm release:check
-  set -a
-  source '$ENV_FILE'
-  set +a
-  pnpm foundry:doctor
-  pnpm prod:doctor
+  node --env-file='$ENV_FILE' ./bin/azcodex.mjs doctor
+  node --env-file='$ENV_FILE' ./scripts/production-doctor.mjs
 "
 
 install -m 0644 "$APP_DIR/deploy/systemd/az-codex.service" /etc/systemd/system/az-codex.service
