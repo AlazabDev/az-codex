@@ -13,8 +13,6 @@
   "signing_in": "جارٍ تسجيل الدخول...",
   "enter_password": "أدخل كلمة المرور.",
   "login_failed": "فشل تسجيل الدخول.",
-  "complete_hcaptcha": "أكمل تحدي hCaptcha قبل تسجيل الدخول.",
-  "hcaptcha_load_failed": "فشل تحميل hCaptcha. حدّث الصفحة وحاول مرة أخرى.",
   "startup": "بدء التشغيل",
   "autostart_title": "التشغيل التلقائي",
   "autostart_description": "أبقِ codex-webui متاحًا بعد إعادة التشغيل عبر تسجيله ضمن بدء التشغيل الخاص بالمستخدم.",
