@@ -22,11 +22,12 @@ install -d -m 0755 "$ENV_DIR"
 install -d -m 0755 /var/www/certbot
 
 if [[ ! -f "$ENV_FILE" ]]; then
-  install -m 0600 "$APP_DIR/deploy/production.env.example" "$ENV_FILE"
+  install -o root -g frappe -m 0640 "$APP_DIR/deploy/production.env.example" "$ENV_FILE"
   echo "Created $ENV_FILE from template."
   echo "Populate secrets before starting az-codex."
 else
-  chmod 0600 "$ENV_FILE"
+  chown root:frappe "$ENV_FILE"
+  chmod 0640 "$ENV_FILE"
 fi
 
 install -m 0644 "$APP_DIR/deploy/systemd/az-codex.service" /etc/systemd/system/az-codex.service
