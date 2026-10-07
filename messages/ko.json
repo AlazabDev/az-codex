@@ -13,8 +13,6 @@
   "signing_in": "로그인 중...",
   "enter_password": "암호를 입력하세요.",
   "login_failed": "로그인에 실패했습니다.",
-  "complete_hcaptcha": "로그인하기 전에 hCaptcha 확인을 완료하세요.",
-  "hcaptcha_load_failed": "hCaptcha를 불러오지 못했습니다. 새로고침 후 다시 시도하세요.",
   "startup": "시작",
   "autostart_title": "자동 시작",
   "autostart_description": "재부팅 후에도 codex-webui를 바로 사용할 수 있도록 사용자 시작 항목에 등록합니다.",
