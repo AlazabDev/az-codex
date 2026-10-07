@@ -89,7 +89,7 @@
     "verify:low-memory-smoke": "node ./scripts/verify-low-memory-smoke.mjs",
     "verify:tunnel-safety": "node ./scripts/verify-tunnel-safety.mjs",
     "test": "pnpm test:unit",
-    "test:unit": "node --test ./scripts/azcodex.test.mjs ./scripts/build-metadata.test.mjs ./scripts/frappe-bench.test.mjs ./scripts/mcp-registry.test.mjs ./scripts/ws-client-backpressure.test.mjs ./scripts/ws-client-subscriptions.test.mjs ./frontend-tests/chart-renderer.test.mjs",
+    "test:unit": "node --test ./scripts/azcodex.test.mjs ./scripts/build-metadata.test.mjs ./scripts/frappe-bench.test.mjs ./scripts/mcp-registry.test.mjs ./scripts/ws-client-backpressure.test.mjs ./scripts/ws-client-subscriptions.test.mjs ./frontend-tests/chart-renderer.test.mjs ./frontend-tests/production-workspace.test.mjs",
     "test:ws-client-backpressure": "node --test ./scripts/ws-client-backpressure.test.mjs",
     "test:azcodex": "node --test ./scripts/azcodex.test.mjs",
     "test:frappe-bench": "node --test ./scripts/frappe-bench.test.mjs",
