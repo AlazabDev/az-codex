@@ -4,7 +4,5 @@ After=az-codex.service
 
 [Service]
 Type=oneshot
-User=frappe
-Group=frappe
-WorkingDirectory=/home/frappe/az-codex
-ExecStart=/bin/sh -c '/usr/bin/curl --fail --silent --max-time 5 http://127.0.0.1:4173/healthz >/dev/null || /usr/bin/node --env-file=/home/frappe/az-codex/.env /home/frappe/az-codex/bin/codex-webui.mjs restart'
+User=root
+ExecStart=/bin/sh -c '/usr/bin/curl --fail --silent --max-time 5 http://127.0.0.1:4173/healthz >/dev/null || /usr/bin/systemctl restart az-codex.service'
