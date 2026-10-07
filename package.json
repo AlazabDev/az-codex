@@ -86,7 +86,7 @@
     "verify:low-memory-smoke": "node ./scripts/verify-low-memory-smoke.mjs",
     "verify:tunnel-safety": "node ./scripts/verify-tunnel-safety.mjs",
     "test": "pnpm test:unit",
-    "test:unit": "node --test ./scripts/azcodex.test.mjs ./scripts/frappe-bench.test.mjs ./scripts/mcp-registry.test.mjs ./scripts/ws-client-backpressure.test.mjs ./frontend-tests/chart-renderer.test.mjs",
+    "test:unit": "node --test ./scripts/azcodex.test.mjs ./scripts/build-metadata.test.mjs ./scripts/frappe-bench.test.mjs ./scripts/mcp-registry.test.mjs ./scripts/ws-client-backpressure.test.mjs ./scripts/ws-client-subscriptions.test.mjs ./frontend-tests/chart-renderer.test.mjs",
     "test:ws-client-backpressure": "node --test ./scripts/ws-client-backpressure.test.mjs",
     "test:azcodex": "node --test ./scripts/azcodex.test.mjs",
     "test:frappe-bench": "node --test ./scripts/frappe-bench.test.mjs",
@@ -108,8 +108,12 @@
     "frappe:verify": "node ./scripts/frappe-verify.mjs",
     "ci": "pnpm check && pnpm check:gateway && pnpm test:unit && pnpm build && pnpm verify",
     "pack:check": "npm pack --dry-run",
-    "release:check": "pnpm ci && pnpm pack:check",
-    "prepublishOnly": "pnpm release:check"
+    "release:check": "pnpm ci && pnpm release:smoke && pnpm pack:check",
+    "prepublishOnly": "pnpm release:check",
+    "foundry:setup": "node ./bin/azcodex.mjs setup",
+    "foundry:doctor": "node ./bin/azcodex.mjs doctor",
+    "foundry:doctor:offline": "node ./bin/azcodex.mjs doctor --offline",
+    "release:smoke": "pnpm gateway:build && pnpm build:e2e-fake && pnpm verify:low-memory-smoke"
   },
   "dependencies": {
     "@inlang/paraglide-js": "^2.16.0",
