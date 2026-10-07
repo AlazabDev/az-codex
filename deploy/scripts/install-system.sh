@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-APP_DIR="${APP_DIR:-/opt/az-codex}"
-ENV_DIR="${ENV_DIR:-/etc/az-codex}"
-ENV_FILE="$ENV_DIR/az-codex.env"
+APP_DIR="${APP_DIR:-/home/frappe/az-codex}"
+ENV_FILE="${ENV_FILE:-$APP_DIR/.env}"
 DOMAIN="${DOMAIN:-codex.alazab.com}"
 
 [[ "${EUID}" -eq 0 ]] || {
@@ -18,17 +17,15 @@ for command_name in nginx systemctl curl; do
   }
 done
 
-install -d -m 0755 "$ENV_DIR"
 install -d -m 0755 /var/www/certbot
 
 if [[ ! -f "$ENV_FILE" ]]; then
-  install -o root -g frappe -m 0640 "$APP_DIR/deploy/production.env.example" "$ENV_FILE"
-  echo "Created $ENV_FILE from template."
-  echo "Populate secrets before starting az-codex."
-else
-  chown root:frappe "$ENV_FILE"
-  chmod 0640 "$ENV_FILE"
+  echo "Missing existing production environment: $ENV_FILE" >&2
+  exit 1
 fi
+
+chown frappe:frappe "$ENV_FILE"
+chmod 0600 "$ENV_FILE"
 
 install -m 0644 "$APP_DIR/deploy/systemd/az-codex.service" /etc/systemd/system/az-codex.service
 install -m 0644 "$APP_DIR/deploy/systemd/az-codex-health.service" /etc/systemd/system/az-codex-health.service
