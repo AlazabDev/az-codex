@@ -22,6 +22,8 @@
     CodexRuntimeProcess,
     CodexRuntimeStatus,
     McpServerStatus,
+    ProductionCheckId,
+    ProductionCheckPayload,
     UserRole
   } from "$lib/types";
 
@@ -50,6 +52,8 @@
   let errorText = $state("");
   let noticeText = $state("");
   let copiedCommand = $state<string | null>(null);
+  let runningCheck = $state<ProductionCheckId | null>(null);
+  let checkResults = $state<Partial<Record<ProductionCheckId, ProductionCheckPayload>>>({});
 
   const canAdmin = $derived(role === "owner" || role === "admin");
   const canRestart = $derived(role === "owner" && Boolean(config?.gateway.restartAvailable));
@@ -82,23 +86,27 @@
     return null;
   });
 
-  const commands = [
+  const commands: Array<{ id: ProductionCheckId; label: string; command: string; description: string }> = [
     {
+      id: "release",
       label: "Release gate",
       command: "pnpm release:check",
       description: "Full TypeScript, Rust, security, runtime smoke and package verification."
     },
     {
+      id: "foundry",
       label: "Foundry live",
       command: "pnpm foundry:doctor",
       description: "Live Codex → Microsoft Foundry round-trip."
     },
     {
+      id: "production",
       label: "Production doctor",
       command: "pnpm prod:doctor",
       description: "Production environment, profiles, runtime and Foundry validation."
     },
     {
+      id: "mcp",
       label: "MCP doctor",
       command: "pnpm mcp:doctor",
       description: "Validate enabled integration targets from the MCP registry."
@@ -183,6 +191,24 @@
     } catch (error) {
       errorText = error instanceof Error ? error.message : String(error);
       actionBusy = null;
+    }
+  }
+
+  async function runCheck(check: ProductionCheckId) {
+    if (role !== "owner" || runningCheck) return;
+    runningCheck = check;
+    errorText = "";
+    noticeText = "";
+    try {
+      const result = await api.runProductionCheck(check);
+      checkResults = { ...checkResults, [check]: result };
+      noticeText = result.ok
+        ? `${result.script} passed in ${Math.max(1, Math.round(result.durationMs / 1000))}s.`
+        : `${result.script} failed with exit code ${result.exitCode ?? "unknown"}.`;
+    } catch (error) {
+      errorText = error instanceof Error ? error.message : String(error);
+    } finally {
+      runningCheck = null;
     }
   }
 
@@ -338,11 +364,39 @@
       <header><div><span>Release tools</span><h3>Verified commands</h3></div><Terminal size={18} /></header>
       <div class="command-list">
         {#each commands as item (item.command)}
-          <button class="command-row" onclick={() => void copyCommand(item.command)} type="button">
-            <div><strong>{item.label}</strong><small>{item.description}</small><code>{item.command}</code></div>
-            <Copy size={14} />
+          <div class="command-row">
+            <div class="command-copy">
+              <strong>{item.label}</strong>
+              <small>{item.description}</small>
+              <code>{item.command}</code>
+            </div>
+            <div class="command-actions">
+              <button class="icon-action" onclick={() => void copyCommand(item.command)} title="Copy command" type="button">
+                <Copy size={14} />
+              </button>
+              <button
+                class="run-action"
+                disabled={role !== "owner" || Boolean(runningCheck)}
+                onclick={() => void runCheck(item.id)}
+                type="button"
+              >
+                {#if runningCheck === item.id}<RefreshCw size={13} class="animate-spin" />{:else}<Activity size={13} />{/if}
+                Run
+              </button>
+            </div>
             {#if copiedCommand === item.command}<span class="copied">copied</span>{/if}
-          </button>
+            {#if checkResults[item.id]}
+              {@const result = checkResults[item.id]!}
+              <div class={`command-result ${result.ok ? "command-result--ok" : "command-result--error"}`}>
+                <header>
+                  <strong>{result.ok ? "PASS" : "FAIL"}</strong>
+                  <span>{result.durationMs} ms · exit {result.exitCode ?? "-"}</span>
+                </header>
+                {#if result.stdout}<pre>{result.stdout}</pre>{/if}
+                {#if result.stderr}<pre>{result.stderr}</pre>{/if}
+              </div>
+            {/if}
+          </div>
         {/each}
       </div>
     </article>
@@ -375,7 +429,7 @@
   .profile-list>span{display:grid;gap:.15rem;border:1px solid var(--line);border-radius:.75rem;padding:.5rem .6rem}.profile-list strong{font-size:.72rem}.profile-list code{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.65rem;color:var(--muted)}.profile-active{border-color:rgba(245,158,11,.45)!important;background:rgba(245,158,11,.07)}
   .mcp-list>div{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:.5rem;border:1px solid var(--line);border-radius:.75rem;padding:.5rem .6rem}.mcp-dot{height:.5rem;width:.5rem;border-radius:999px;background:#10b981}.mcp-list strong{font-size:.72rem}.mcp-list small{color:var(--muted);font-size:.63rem}
   .card-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.85rem}.production-button{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;border:1px solid var(--line);border-radius:.75rem;padding:.48rem .7rem;color:var(--ink);font-size:.7rem;font-weight:800;transition:transform .14s ease,background .14s ease}.production-button:hover:not(:disabled){transform:translateY(-1px);background:var(--panel-soft)}.production-button:disabled{cursor:not-allowed;opacity:.45}.production-button--primary{border-color:#111827;background:#111827;color:white}.production-button--danger{color:#b91c1c}
-  .command-row{position:relative;display:flex;width:100%;align-items:center;justify-content:space-between;gap:.75rem;border:1px solid var(--line);border-radius:.8rem;padding:.62rem .7rem;text-align:left}.command-row:hover{background:var(--panel-soft)}.command-row>div{min-width:0;display:grid;gap:.18rem}.command-row strong{font-size:.72rem}.command-row small{font-size:.64rem;color:var(--muted)}.command-row code{margin-top:.15rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.64rem;color:#b45309}.copied{position:absolute;right:2rem;top:.45rem;border-radius:999px;background:#dcfce7;padding:.15rem .4rem;font-size:.56rem;font-weight:800;color:#15803d}
+  .command-row{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:.75rem;border:1px solid var(--line);border-radius:.8rem;padding:.62rem .7rem}.command-copy{min-width:0;display:grid;gap:.18rem}.command-row strong{font-size:.72rem}.command-row small{font-size:.64rem;color:var(--muted)}.command-row code{margin-top:.15rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.64rem;color:#b45309}.command-actions{display:flex;align-items:center;gap:.35rem}.icon-action,.run-action{display:inline-flex;align-items:center;justify-content:center;gap:.3rem;border:1px solid var(--line);border-radius:.55rem;padding:.35rem .45rem;font-size:.62rem;font-weight:800}.run-action{background:#111827;color:#fff}.icon-action:hover,.run-action:hover:not(:disabled){transform:translateY(-1px)}.run-action:disabled{cursor:not-allowed;opacity:.4}.copied{position:absolute;right:6rem;top:.45rem;border-radius:999px;background:#dcfce7;padding:.15rem .4rem;font-size:.56rem;font-weight:800;color:#15803d}.command-result{grid-column:1/-1;overflow:hidden;border-radius:.7rem;border:1px solid var(--line)}.command-result header{display:flex;align-items:center;justify-content:space-between;background:var(--panel-soft);padding:.4rem .55rem}.command-result header strong{font-size:.62rem}.command-result header span{font-size:.58rem;color:var(--muted)}.command-result pre{max-height:14rem;overflow:auto;margin:0;border-top:1px solid var(--line);padding:.55rem;font-size:.62rem;line-height:1.45;white-space:pre-wrap;color:var(--muted)}.command-result--ok{border-color:rgba(16,185,129,.3)}.command-result--ok header strong{color:#059669}.command-result--error{border-color:rgba(239,68,68,.3)}.command-result--error header strong{color:#dc2626}
   .production-toolbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.65rem;margin-top:.9rem;border-radius:1.2rem;padding:.75rem}.tool-card{display:flex;align-items:center;gap:.6rem;border:1px solid var(--line);border-radius:.85rem;padding:.65rem;text-align:left}.tool-card:hover:not(:disabled){background:var(--panel-soft)}.tool-card:disabled{opacity:.45}.tool-card strong{display:block;font-size:.72rem}.tool-card small{display:block;margin-top:.1rem;font-size:.61rem;color:var(--muted)}
   .production-alert{display:flex;align-items:center;gap:.5rem;margin-top:.8rem;border-radius:.9rem;padding:.65rem .8rem;font-size:.74rem;font-weight:700}.production-alert--error{color:#b91c1c}.production-alert--ok{color:#047857}.empty-state{margin-top:.8rem;border:1px dashed var(--line);border-radius:.8rem;padding:.8rem;text-align:center;font-size:.72rem;color:var(--muted)}
   @media(max-width:980px){.production-metrics,.production-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:720px){.production-workspace{padding:.8rem}.production-hero{align-items:stretch;flex-direction:column}.production-grid,.production-metrics,.production-toolbar{grid-template-columns:1fr}}
