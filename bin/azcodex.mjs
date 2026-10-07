@@ -1,9 +1,5 @@
 #!/usr/bin/env node
 // azcodex — Codex CLI backed by Microsoft Foundry models.
-//   azcodex [codex args...]   run codex with CODEX_HOME=~/.azcodex (Foundry provider)
-//   azcodex setup             write ~/.azcodex/config.toml from AZURE_FOUNDRY_* variables
-//   azcodex doctor            check settings, API key and the codex binary
-//   azcodex webui             register the `codex` + `azcodex` profiles in codex-webui.yml
 // Plain `codex` is untouched and keeps using the default OpenAI account/model.
 import { spawn, spawnSync } from "node:child_process";
 import os from "node:os";
@@ -23,6 +19,11 @@ import {
   normalizeBaseUrl,
   registerWebuiProfiles
 } from "../scripts/azcodex-lib.mjs";
+import {
+  inspectRegistry,
+  loadRegistry,
+  providerRelativePath
+} from "../scripts/mcp-registry-lib.mjs";
 
 const codexBin = process.env.AZCODEX_CODEX_BIN || process.env.CODEX_WEBUI_CODEX_BIN || "codex";
 
@@ -32,7 +33,10 @@ function usage() {
 Usage:
   azcodex [codex args...]   Run codex against Foundry (CODEX_HOME=${azcodexHome()})
   azcodex setup             Generate config.toml from the environment
-  azcodex doctor            Validate endpoint, API key and codex binary
+  azcodex doctor            Validate Foundry, Codex and registered integrations
+  azcodex integrations      List registered Alazab integrations
+  azcodex integrations doctor [--json]
+                            Validate all enabled integration targets
   azcodex webui             Add 'codex' (OpenAI) and 'azcodex' (Foundry) profiles to codex-webui.yml
   azcodex charts [--openai] [--remove]
                             Teach the agent to draw charts (AGENTS.md). Default: azcodex home;
@@ -56,6 +60,43 @@ function requireKey(settings) {
   }
 }
 
+async function printIntegrations(args) {
+  const action = args.find((value) => !value.startsWith("-")) ?? "list";
+  const json = args.includes("--json");
+
+  if (action === "list") {
+    const registry = await loadRegistry();
+    if (json) {
+      console.log(JSON.stringify(registry, null, 2));
+      return;
+    }
+    console.log(`Integration registry v${registry.version}`);
+    for (const provider of registry.providers) {
+      console.log(
+        `${provider.enabled ? "ON " : "OFF"} ${provider.id.padEnd(16)} ${provider.kind.padEnd(10)} ${providerRelativePath(provider)}`
+      );
+    }
+    return;
+  }
+
+  if (action === "doctor") {
+    const result = await inspectRegistry();
+    if (json) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      console.log(`Integration registry v${result.version}`);
+      for (const provider of result.providers) {
+        const status = provider.healthy ? "OK" : "FAIL";
+        console.log(`${status.padEnd(5)} ${provider.id.padEnd(16)} ${provider.kind.padEnd(10)} ${provider.target}`);
+      }
+    }
+    if (!result.healthy) process.exitCode = 1;
+    return;
+  }
+
+  throw new Error(`Unknown integrations action: ${action}`);
+}
+
 async function main() {
   const [command, ...rest] = process.argv.slice(2);
   const settings = foundrySettings();
@@ -76,19 +117,37 @@ async function main() {
       ok &&= pass;
       console.log(`${pass ? "OK  " : "FAIL"} ${label}${pass || !hint ? "" : ` — ${hint}`}`);
     };
-    let baseUrl = "";
+
     try {
-      baseUrl = normalizeBaseUrl(settings.endpoint, settings.apiVersion);
+      const baseUrl = normalizeBaseUrl(settings.endpoint, settings.apiVersion);
       check(`endpoint → ${baseUrl}`, true);
     } catch (error) {
       check("endpoint", false, error.message);
     }
+
     check(`${settings.apiKeyEnv} set`, Boolean(process.env[settings.apiKeyEnv]), "export your Foundry API key");
     const probe = spawnSync(codexBin, ["--version"], { encoding: "utf8" });
     check(`${codexBin} installed`, probe.status === 0, "npm install -g @openai/codex");
+
+    try {
+      const registry = await inspectRegistry();
+      check(
+        `integration registry (${registry.providers.filter((provider) => provider.enabled).length} enabled)`,
+        registry.healthy,
+        "run `azcodex integrations doctor`"
+      );
+    } catch (error) {
+      check("integration registry", false, error.message);
+    }
+
     console.log(`model (deployment): ${settings.model}`);
     console.log(`CODEX_HOME: ${azcodexHome()}`);
     process.exit(ok ? 0 : 1);
+  }
+
+  if (command === "integrations") {
+    await printIntegrations(rest);
+    return;
   }
 
   if (command === "charts") {
@@ -107,6 +166,7 @@ async function main() {
       console.log(`Frappe support removed from ${home} (${result.agents.changed ? "AGENTS.md updated" : "nothing to remove"}).`);
       return;
     }
+
     const option = (name) => {
       const index = rest.indexOf(name);
       return index >= 0 ? rest[index + 1] : undefined;
@@ -115,9 +175,10 @@ async function main() {
     if (!bench) {
       throw new Error("No bench found. Pass --bench /path/to/frappe-bench (a folder containing apps/ and sites/apps.txt).");
     }
+
     const state = {
       benchPath: bench,
-      sites: (option("--sites") ?? "").split(",").map((v) => v.trim()).filter(Boolean),
+      sites: (option("--sites") ?? "").split(",").map((value) => value.trim()).filter(Boolean),
       readonly: rest.includes("--readonly"),
       allowConsole: rest.includes("--allow-console")
     };
@@ -149,7 +210,6 @@ async function main() {
     return;
   }
 
-  // Default: run codex with the Foundry provider.
   requireKey(settings);
   await ensureAzcodexHome(settings);
   await installChartInstructions(azcodexHome());
