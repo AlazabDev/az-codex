@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-APP_DIR="${APP_DIR:-/opt/az-codex}"
-ENV_FILE="${ENV_FILE:-/etc/az-codex/az-codex.env}"
+APP_DIR="${APP_DIR:-/home/frappe/az-codex}"
+ENV_FILE="${ENV_FILE:-/home/frappe/az-codex/.env}"
 RUN_AS="${RUN_AS:-frappe}"
 
 fail() {
