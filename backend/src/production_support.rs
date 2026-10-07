@@ -12,7 +12,7 @@ fn production_project_root() -> Result<PathBuf> {
         .with_context(|| format!("resolve production project root: {}", root.display()))?;
     if !root.join("package.json").is_file() {
         anyhow::bail!(
-            "{{"code":"PRODUCTION_ROOT_INVALID","message":"Production project root does not contain package.json."}}"
+            r#"{"code":"PRODUCTION_ROOT_INVALID","message":"Production project root does not contain package.json."}"#
         );
     }
     Ok(root)
@@ -25,7 +25,7 @@ fn production_check_spec(check: &str) -> Result<(&'static str, Duration)> {
         "production" => Ok(("prod:doctor", Duration::from_secs(3 * 60))),
         "mcp" => Ok(("mcp:doctor", Duration::from_secs(2 * 60))),
         _ => anyhow::bail!(
-            "{{"code":"PRODUCTION_CHECK_NOT_ALLOWED","message":"Unknown production check."}}"
+            r#"{"code":"PRODUCTION_CHECK_NOT_ALLOWED","message":"Unknown production check."}"#
         ),
     }
 }
@@ -75,7 +75,7 @@ pub(crate) async fn run_production_check_payload(params: Value) -> Result<Value>
         .await
         .map_err(|_| {
             anyhow!(
-                "{{"code":"PRODUCTION_CHECK_TIMEOUT","message":"Production check timed out."}}"
+                r#"{"code":"PRODUCTION_CHECK_TIMEOUT","message":"Production check timed out."}"#
             )
         })?
         .with_context(|| format!("run production check with {pnpm_bin}"))?;
