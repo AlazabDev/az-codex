@@ -23,7 +23,7 @@ pnpm install --frozen-lockfile
 pnpm release:check
 ```
 
-`release:check` runs the TypeScript/Svelte checks, Rust checks, unit tests, production build, compatibility/security verification, a constrained-memory runtime smoke test, and an npm package dry-run.
+`release:check` runs the TypeScript/Svelte checks, Rust checks, unit tests, production build, compatibility/security verification, a constrained-memory runtime smoke test, and a `pnpm pack` package-integrity check.
 
 ## Secrets
 
@@ -71,6 +71,23 @@ pnpm prod:doctor
 ```
 
 `foundry:doctor` performs a small live `codex exec` round-trip through the configured Foundry deployment. Use `pnpm foundry:doctor:offline` only for configuration-only diagnostics.
+
+## Production workspace
+
+The chat UI exposes a dedicated **Production / الإنتاج** workspace. It is available from the workspace menu and directly from the composer toolbar.
+
+The production workspace shows runtime/build health, active Codex routing, host memory/OOM state, MCP status, and links to Git, Terminal, Diagnostics, and MCP Settings.
+
+For the owner role it can execute only four server-side checks through a fixed allowlist:
+
+```text
+release     -> pnpm release:check
+foundry     -> pnpm foundry:doctor
+production  -> pnpm prod:doctor
+mcp         -> pnpm mcp:doctor
+```
+
+There is no arbitrary command parameter. The backend resolves the application root from `CODEX_WEBUI_PROJECT_ROOT`, enforces per-check timeouts, bounds captured output, audits the WebSocket mutation, and rejects non-owner callers.
 
 ## systemd
 
