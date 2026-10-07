@@ -10,6 +10,9 @@ User=frappe
 Group=frappe
 WorkingDirectory=/opt/az-codex
 EnvironmentFile=/etc/az-codex/az-codex.env
+# Materialize /home/frappe/.azcodex/config.toml from the production Foundry env
+# before the WebUI starts. This fails closed when endpoint/key/deployment are missing.
+ExecStartPre=/usr/bin/node /opt/az-codex/bin/azcodex.mjs setup
 ExecStart=/usr/bin/node /opt/az-codex/bin/codex-webui.mjs
 ExecStartPost=/usr/bin/curl --fail --silent --show-error --retry 20 --retry-delay 1 http://127.0.0.1:4173/healthz
 ExecReload=/usr/bin/node /opt/az-codex/bin/codex-webui.mjs restart
