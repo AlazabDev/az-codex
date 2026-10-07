@@ -46,11 +46,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run production CI gate
-        run: pnpm ci
-
-      - name: Verify npm package contents
-        run: npm pack --dry-run
+      - name: Run production release gate
+        run: pnpm release:check
 
   security-regressions:
     name: Security regressions
