@@ -1,0 +1,25 @@
+[Unit]
+Description=Az Codex WebUI
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=frappe
+Group=frappe
+WorkingDirectory=/opt/az-codex
+EnvironmentFile=/etc/az-codex/az-codex.env
+ExecStart=/usr/bin/node /opt/az-codex/bin/codex-webui.mjs
+ExecStartPost=/usr/bin/curl --fail --silent --show-error --retry 20 --retry-delay 1 http://127.0.0.1:4173/healthz
+ExecReload=/usr/bin/node /opt/az-codex/bin/codex-webui.mjs restart
+ExecStop=/usr/bin/node /opt/az-codex/bin/codex-webui.mjs stop
+TimeoutStartSec=60
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=false
+
+[Install]
+WantedBy=multi-user.target

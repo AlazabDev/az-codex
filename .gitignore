@@ -13,3 +13,11 @@ dist
 rhwp-*.png
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Production/runtime secrets and local operator state
+deploy/production.env
+*.pem
+*.key
+*.p12
+*.pfx
+.azcodex/
