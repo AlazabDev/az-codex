@@ -182,6 +182,7 @@
     | "settings"
     | "computer"
     | "diagnostics"
+    | "production"
     | "memory"
     | `git-diff:${string}`
     | `code-diff:${string}`
@@ -265,12 +266,13 @@
   type ArenaWorkspaceComponent = typeof import("$lib/components/ArenaWorkspace.svelte").default;
   type CodeDiffWorkspaceComponent = typeof import("$lib/components/CodeDiffWorkspace.svelte").default;
   type DiagnosticsWorkspaceComponent = typeof import("$lib/components/DiagnosticsWorkspace.svelte").default;
+  type ProductionWorkspaceComponent = typeof import("$lib/components/ProductionWorkspace.svelte").default;
   type FileWorkspaceComponent = typeof import("$lib/components/FileWorkspace.svelte").default;
   type GitWorkspaceComponent = typeof import("$lib/components/GitWorkspace.svelte").default;
   type MemoryWorkspaceComponent = typeof import("$lib/components/MemoryWorkspace.svelte").default;
   type SettingsWorkspaceComponent = typeof import("$lib/components/SettingsWorkspace.svelte").default;
   type TerminalWorkspaceComponent = typeof import("$lib/components/TerminalWorkspace.svelte").default;
-  type LazyWorkspaceKind = "arena" | "codeDiff" | "diagnostics" | "file" | "git" | "memory" | "settings" | "terminal";
+  type LazyWorkspaceKind = "arena" | "codeDiff" | "diagnostics" | "production" | "file" | "git" | "memory" | "settings" | "terminal";
   type SlashSuggestion = {
     key: string;
     command: string;
@@ -416,6 +418,7 @@
   let ArenaWorkspaceView = $state<ArenaWorkspaceComponent | null>(null);
   let CodeDiffWorkspaceView = $state<CodeDiffWorkspaceComponent | null>(null);
   let DiagnosticsWorkspaceView = $state<DiagnosticsWorkspaceComponent | null>(null);
+  let ProductionWorkspaceView = $state<ProductionWorkspaceComponent | null>(null);
   let FileWorkspaceView = $state<FileWorkspaceComponent | null>(null);
   let GitWorkspaceView = $state<GitWorkspaceComponent | null>(null);
   let MemoryWorkspaceView = $state<MemoryWorkspaceComponent | null>(null);
@@ -429,6 +432,7 @@
   let settingsTabOpen = $state(false);
   let computerTabOpen = $state(false);
   let diagnosticsTabOpen = $state(false);
+  let productionTabOpen = $state(false);
   let memoryTabOpen = $state(false);
   let settingsInitialTab = $state<"config" | "defaults" | "startup" | "audit" | "theme" | "notifications" | "presets" | "automations" | "apps" | "plugins" | "skills" | "mcp" | null>(null);
   let gitDiffTabs = $state<GitDiffTab[]>([]);
@@ -2777,7 +2781,7 @@
   });
   const workspaceTabs = $derived.by(() => {
     const _locale = $localeSignal;
-    const tabs: Array<{ id: WorkspaceTabId; label: string; kind: "chat" | "tasks" | "git" | "settings" | "computer" | "diagnostics" | "memory" | "git-diff" | "code-diff" | "file" | "terminal" }> = [
+    const tabs: Array<{ id: WorkspaceTabId; label: string; kind: "chat" | "tasks" | "git" | "settings" | "computer" | "diagnostics" | "production" | "memory" | "git-diff" | "code-diff" | "file" | "terminal" }> = [
       { id: "chat", label: ui.chat, kind: "chat" }
     ];
     if (tasksTabOpen) {
@@ -2813,6 +2817,13 @@
         id: "diagnostics",
         label: ui.diagnostics,
         kind: "diagnostics"
+      });
+    }
+    if (productionTabOpen) {
+      tabs.push({
+        id: "production",
+        label: "Production",
+        kind: "production"
       });
     }
     if (memoryTabOpen) {
@@ -2889,6 +2900,9 @@
     if (kind === "diagnostics" && DiagnosticsWorkspaceView) {
       return;
     }
+    if (kind === "production" && ProductionWorkspaceView) {
+      return;
+    }
     if (kind === "file" && FileWorkspaceView) {
       return;
     }
@@ -2931,6 +2945,11 @@
       if (kind === "diagnostics") {
         const module = await import("$lib/components/DiagnosticsWorkspace.svelte");
         DiagnosticsWorkspaceView = module.default;
+        return;
+      }
+      if (kind === "production") {
+        const module = await import("$lib/components/ProductionWorkspace.svelte");
+        ProductionWorkspaceView = module.default;
         return;
       }
       if (kind === "file") {
@@ -2996,6 +3015,9 @@
     if (activeWorkspaceTabId === "diagnostics") {
       return ui.diagnostics;
     }
+    if (activeWorkspaceTabId === "production") {
+      return "Production";
+    }
     if (activeWorkspaceTabId === "memory") {
       return ui.memory;
     }
@@ -3025,6 +3047,10 @@
     }
     if (activeWorkspaceTabId === "diagnostics") {
       void ensureLazyWorkspaceLoaded("diagnostics");
+      return;
+    }
+    if (activeWorkspaceTabId === "production") {
+      void ensureLazyWorkspaceLoaded("production");
       return;
     }
     if (activeWorkspaceTabId === "memory") {
@@ -11045,6 +11071,19 @@
     }
   }
 
+  function openProductionTab() {
+    productionTabOpen = true;
+    activeWorkspaceTabId = "production";
+    workspaceMenuOpen = false;
+  }
+
+  function closeProductionTab() {
+    productionTabOpen = false;
+    if (activeWorkspaceTabId === "production") {
+      activeWorkspaceTabId = "chat";
+    }
+  }
+
   function openMemoryTab() {
     memoryTabOpen = true;
     activeWorkspaceTabId = "memory";
@@ -14748,6 +14787,7 @@
       onForkHandoff={() => void forkCurrentThread("handoff")}
       onOpenComputerTab={openComputerTab}
       onOpenDiagnosticsTab={openDiagnosticsTab}
+      onOpenProductionTab={openProductionTab}
       onOpenGitTab={openGitTab}
       onOpenMemoryTab={openMemoryTab}
       onOpenMobileSidebar={openMobileSidebar}
@@ -14791,6 +14831,10 @@
           }
           if (kind === "diagnostics") {
             closeDiagnosticsTab();
+            return;
+          }
+          if (kind === "production") {
+            closeProductionTab();
             return;
           }
           if (kind === "memory") {
@@ -15761,6 +15805,15 @@
                           <Shield size={14} class={composerSettingsOpen && composerSettingsTab === "security" ? "text-sky-600" : "text-gray-400"} />
                           <span class="hidden lg:inline">{ui.securitySession}</span>
                         </button>
+                        <button
+                          class="composer-compact-trigger ui-animated-button ui-animated-button--soft hidden h-7 shrink-0 items-center gap-1.25 rounded-lg border border-transparent px-2 text-[10px] font-bold text-gray-500 transition-all hover:border-amber-200 hover:bg-amber-50 hover:text-amber-800 sm:h-8 sm:px-2.5 sm:text-[11px] lg:flex"
+                          onclick={openProductionTab}
+                          title="Production tools"
+                          type="button"
+                        >
+                          <Shield size={14} class="text-amber-600" />
+                          <span>Production</span>
+                        </button>
                       {/if}
                     </div>
                     <div class={`flex items-center justify-end gap-1.25 sm:gap-1.5 ${composerToolbarCompact ? "basis-full" : "shrink-0"}`}>
@@ -16433,6 +16486,24 @@
                 activeWorkspaceTabId = "chat";
                 await selectSession(sessionId, profileId);
               }}
+            />
+          {:else}
+            <div class="workspace-loading-card h-full">
+              <RefreshCw size={16} class="animate-spin text-gray-300" />
+              <span>{getWorkspaceLoadingLabel()}</span>
+            </div>
+          {/if}
+        </div>
+      {:else if activeWorkspaceTabId === "production"}
+        <div class="h-full overflow-y-auto" style="background: var(--bg);">
+          {#if ProductionWorkspaceView}
+            <ProductionWorkspaceView
+              role={webRole}
+              activeProfileId={activeProfileId}
+              onOpenDiagnostics={openDiagnosticsTab}
+              onOpenGit={openGitTab}
+              onOpenSettings={() => openSettingsTab("mcp")}
+              onCreateTerminal={() => void createTerminalTab()}
             />
           {:else}
             <div class="workspace-loading-card h-full">
