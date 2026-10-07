@@ -148,7 +148,10 @@ test("installFrappe wires AGENTS.md and MCP config for azcodex and plain codex",
   const az = await fs.mkdtemp(path.join(os.tmpdir(), "azh-"));
   const state = { benchPath: b.root, sites: ["dev.local"], readonly: false, allowConsole: false };
   await installFrappe(az, state);
-  assert.match(await fs.readFile(path.join(az, "AGENTS.md"), "utf8"), new RegExp(FRAPPE_START));
+  const agentsText = await fs.readFile(path.join(az, "AGENTS.md"), "utf8");
+  assert.match(agentsText, new RegExp(FRAPPE_START));
+  assert.match(agentsText, /\.\/\.azcodex\/bin\/az-bench/u);
+  assert.match(agentsText, /does not ask for interactive approval/u);
 
   const settings = { endpoint: "https://r.openai.azure.com", apiKeyEnv: "K", model: "m", apiVersion: "" };
   await ensureAzcodexHome(settings, { AZCODEX_HOME: az });
