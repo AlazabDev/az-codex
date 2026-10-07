@@ -356,7 +356,7 @@
         <button class="production-button" disabled={!canAdmin || Boolean(actionBusy)} onclick={() => void refreshMcp()} type="button">
           <RefreshCw size={14} class={actionBusy === "mcp" ? "animate-spin" : ""} /> Refresh MCP
         </button>
-        <button class="production-button" onclick={onOpenSettings} type="button"><Settings size={14} /> MCP settings</button>
+        <button class="production-button" onclick={() => onOpenSettings?.()} type="button"><Settings size={14} /> MCP settings</button>
       </div>
     </article>
 
@@ -364,6 +364,7 @@
       <header><div><span>Release tools</span><h3>Verified commands</h3></div><Terminal size={18} /></header>
       <div class="command-list">
         {#each commands as item (item.command)}
+          {@const result = checkResults[item.id]}
           <div class="command-row">
             <div class="command-copy">
               <strong>{item.label}</strong>
@@ -385,8 +386,7 @@
               </button>
             </div>
             {#if copiedCommand === item.command}<span class="copied">copied</span>{/if}
-            {#if checkResults[item.id]}
-              {@const result = checkResults[item.id]!}
+            {#if result}
               <div class={`command-result ${result.ok ? "command-result--ok" : "command-result--error"}`}>
                 <header>
                   <strong>{result.ok ? "PASS" : "FAIL"}</strong>
@@ -403,9 +403,9 @@
   </section>
 
   <section class="production-toolbar">
-    <button class="tool-card" onclick={onOpenGit} type="button"><GitBranch size={17} /><span><strong>Git</strong><small>Review source and deployment diff</small></span></button>
+    <button class="tool-card" onclick={() => onOpenGit?.()} type="button"><GitBranch size={17} /><span><strong>Git</strong><small>Review source and deployment diff</small></span></button>
     <button class="tool-card" onclick={() => void onCreateTerminal?.()} disabled={!canAdmin} type="button"><Terminal size={17} /><span><strong>Terminal</strong><small>Run guarded production commands</small></span></button>
-    <button class="tool-card" onclick={onOpenDiagnostics} type="button"><Activity size={17} /><span><strong>Diagnostics</strong><small>Processes, parser and runtime events</small></span></button>
+    <button class="tool-card" onclick={() => onOpenDiagnostics?.()} type="button"><Activity size={17} /><span><strong>Diagnostics</strong><small>Processes, parser and runtime events</small></span></button>
     <button class="tool-card" onclick={onOpenSettings} type="button"><Settings size={17} /><span><strong>Settings</strong><small>Profiles, MCP, skills and automation</small></span></button>
   </section>
 </div>
