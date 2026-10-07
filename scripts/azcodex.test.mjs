@@ -67,6 +67,8 @@ test("buildConfigToml uses the foundry provider and never embeds the key", () =>
   assert.match(toml, /model_provider = "foundry"/);
   assert.match(toml, /model = "my-dep"/);
   assert.match(toml, /wire_api = "responses"/);
+  assert.match(toml, /requires_openai_auth = false/);
+  assert.ok(!toml.includes("env_http_headers"));
   assert.ok(!toml.includes("query_params"));
 });
 
