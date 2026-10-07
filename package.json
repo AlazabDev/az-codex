@@ -43,7 +43,8 @@
     "preview": "vite preview",
     "check": "pnpm paraglide:compile && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test:e2e": "pnpm build && pnpm verify:static-build && pnpm verify:api-parity && pnpm build:e2e-fake && playwright test",
-    "hash-password": "node scripts/hash-password.mjs"
+    "hash-password": "node scripts/hash-password.mjs",
+    "frappe:install": "node scripts/install-frappe-profile.mjs"
   },
   "dependencies": {
     "@inlang/paraglide-js": "^2.16.0",
