@@ -1,6 +1,6 @@
 {
   "name": "az-codex",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
   "description": "Production-grade web interface and Frappe-aware automation layer for Codex CLI, powered by SvelteKit and a Rust WebSocket gateway.",
   "type": "module",
