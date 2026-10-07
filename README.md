@@ -1,6 +1,6 @@
-# codex-webui
+# az-codex
 
-`codex-webui` is a reconnect-safe web workspace for Codex CLI.
+`az-codex` is Alazab's production Codex workspace: a reconnect-safe WebUI, Rust gateway, Frappe automation layer, and Microsoft Foundry runtime.
 
 It keeps Codex turns running on the server when the browser disconnects, exposes a Claude-like multi-panel UI, and aims to cover the day-to-day workflow people expect from the Codex app and the Codex VS Code extension without requiring VS Code itself.
 
@@ -483,16 +483,17 @@ Two runtimes side by side, selectable per session in the web UI:
 ```bash
 export AZURE_FOUNDRY_ENDPOINT=https://my-resource.openai.azure.com
 export AZURE_FOUNDRY_API_KEY=...            # never written to disk by azcodex
-export AZURE_FOUNDRY_MODEL=gpt-5-codex      # your deployment name
+export AZURE_FOUNDRY_MODEL=az-model-sol     # exact Azure deployment name; required
 
-azcodex doctor      # validate endpoint, key and codex binary
+azcodex doctor      # validate config + run a live Codex -> Foundry round-trip
+azcodex doctor --offline  # configuration-only diagnostics
 azcodex setup       # writes ~/.azcodex/config.toml (provider "foundry", Responses API)
 azcodex             # interactive Codex on Foundry (all codex args pass through)
 azcodex webui       # registers the `codex` + `azcodex` profiles in ~/.codex/codex-webui.yml
 codex-webui restart # export AZURE_FOUNDRY_API_KEY before starting
 ```
 
-Notes: `azcodex` only creates `config.toml` if it is missing or carries its `managed-by` marker; hand-edited files are never overwritten. The default profile stays OpenAI unless you already chose another. Run `pnpm test:azcodex` for the unit tests.
+Notes: `AZURE_FOUNDRY_MODEL` is mandatory and must be the Azure deployment name; az-codex never guesses a fallback deployment. `azcodex` only creates `config.toml` if it is missing or carries its `managed-by` marker; hand-edited files are never overwritten. The production template registers isolated `codex` and `azcodex` profiles and selects `azcodex` by default. Run `pnpm test:azcodex` for the unit tests.
 
 ## Charts in chat
 
