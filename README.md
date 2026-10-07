@@ -469,3 +469,35 @@ When building from source, `pnpm build` creates both the static frontend and the
 
 - the upstream `codex` repository
 - the Codex app and Codex IDE surfaces described there
+
+
+## azcodex: Codex on Microsoft Foundry
+
+Two runtimes side by side, selectable per session in the web UI:
+
+| Command / profile | Provider | Model | `CODEX_HOME` |
+| --- | --- | --- | --- |
+| `codex` | OpenAI (default, ChatGPT login or API key) | OpenAI default model | `~/.codex` |
+| `azcodex` | Microsoft Foundry (Azure OpenAI) | your Foundry deployment (`AZURE_FOUNDRY_MODEL`) | `~/.azcodex` |
+
+```bash
+export AZURE_FOUNDRY_ENDPOINT=https://my-resource.openai.azure.com
+export AZURE_FOUNDRY_API_KEY=...            # never written to disk by azcodex
+export AZURE_FOUNDRY_MODEL=gpt-5-codex      # your deployment name
+
+azcodex doctor      # validate endpoint, key and codex binary
+azcodex setup       # writes ~/.azcodex/config.toml (provider "foundry", Responses API)
+azcodex             # interactive Codex on Foundry (all codex args pass through)
+azcodex webui       # registers the `codex` + `azcodex` profiles in ~/.codex/codex-webui.yml
+codex-webui restart # export AZURE_FOUNDRY_API_KEY before starting
+```
+
+Notes: `azcodex` only creates `config.toml` if it is missing or carries its `managed-by` marker; hand-edited files are never overwritten. The default profile stays OpenAI unless you already chose another. Run `pnpm test:azcodex` for the unit tests.
+
+## Charts in chat
+
+Fenced ```` ```chart ```` blocks containing a JSON spec are rendered as inline bar, line, area, scatter or pie charts. See [docs/charts.md](docs/charts.md) for the format and the `AGENTS.md` snippet that teaches Codex to use it.
+
+## Frappe bench development
+
+`azcodex frappe --bench <path>` gives the agent Frappe conventions plus a `frappe-bench` MCP server (status, DocType schema, tests, migrate, build, logs) restricted to developer-mode sites. See [docs/frappe.md](docs/frappe.md).

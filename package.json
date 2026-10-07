@@ -5,13 +5,15 @@
   "description": "Claude-like web UI for Codex CLI with a Rust WebSocket gateway and SvelteKit frontend.",
   "type": "module",
   "bin": {
-    "codex-webui": "./bin/codex-webui.mjs"
+    "codex-webui": "./bin/codex-webui.mjs",
+    "azcodex": "./bin/azcodex.mjs"
   },
   "files": [
     "bin",
     "build",
     "backend",
     "dist",
+    "mcp",
     "docs",
     "scripts",
     "src",

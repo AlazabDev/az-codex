@@ -2,6 +2,13 @@ import { toHtml } from "hast-util-to-html";
 import { createLowlight, common } from "lowlight";
 import { Marked, Renderer } from "marked";
 
+import {
+  CHART_ALLOWED_TAGS,
+  CHART_ATTRIBUTE_VALIDATORS,
+  CHART_TAG_ATTRIBUTES,
+  renderChartBlock
+} from "./chart-renderer.ts";
+
 const sharedLowlight = createLowlight(common);
 const copyLabelMarker = "__CODEX_WEBUI_COPY_CODE_LABEL__";
 const markdownAllowedTags = new Set([
@@ -32,7 +39,8 @@ const markdownAllowedTags = new Set([
   "th",
   "thead",
   "tr",
-  "ul"
+  "ul",
+  ...CHART_ALLOWED_TAGS
 ]);
 const markdownGlobalAttributes = new Set(["aria-hidden", "aria-label", "class", "title"]);
 const markdownTagAttributes = new Map([
@@ -43,6 +51,13 @@ const markdownTagAttributes = new Map([
   ["span", new Set(["data-copy-code-label"])],
   ["svg", new Set(["fill", "stroke", "viewbox"])]
 ]);
+for (const [tag, attributes] of Object.entries(CHART_TAG_ATTRIBUTES)) {
+  const merged = markdownTagAttributes.get(tag) ?? new Set<string>();
+  for (const attribute of attributes) {
+    merged.add(attribute);
+  }
+  markdownTagAttributes.set(tag, merged);
+}
 
 function escapeHtml(value: string) {
   return value
@@ -76,6 +91,12 @@ const renderer = new Renderer();
 
 renderer.code = function ({ text: code, lang }) {
   const normalizedLanguage = lang?.trim().toLowerCase() ?? "";
+  if (normalizedLanguage === "chart") {
+    const chart = renderChartBlock(code);
+    if (chart) {
+      return chart;
+    }
+  }
   const highlighted =
     normalizedLanguage && sharedLowlight.registered(normalizedLanguage)
       ? toHtml(sharedLowlight.highlight(normalizedLanguage, code))
@@ -176,6 +197,8 @@ function sanitizeRenderedMarkdown(parsed: string) {
         keep = false;
       } else if (name === "rel") {
         element.setAttribute("rel", "noreferrer");
+      } else if (keep && name in CHART_ATTRIBUTE_VALIDATORS && !CHART_ATTRIBUTE_VALIDATORS[name](value)) {
+        keep = false;
       }
 
       if (!keep) {

@@ -1,0 +1,14 @@
+python3 - <<'EOF'
+import json
+p='package.json'
+s=open(p).read()
+s=s.replace('"test:azcodex": "node --test ./scripts/azcodex.test.mjs"','"test:azcodex": "node --test ./scripts/azcodex.test.mjs ./scripts/frappe-bench.test.mjs"')
+s=s.replace('    "dist",\n','    "dist",\n    "mcp",\n',1)
+json.loads(s)
+open(p,'w').write(s)
+EOF
+grep -n '"mcp"\|test:azcodex' package.json
+# CLI smoke
+B=$(mktemp -d) && mkdir -p $B/apps $B/sites/dev.local && touch $B/sites/apps.txt && echo '{"developer_mode":1}' > $B/sites/dev.local/site_config.json
+export AZCODEX_HOME=/tmp/azh3; rm -rf $AZCODEX_HOME
+AZURE_FOUNDRY_ENDPOINT=https://demo.openai.azure.com node bin/azcodex.mjs frappe --bench $B && tail -8 $AZCODEX_HOME/config.toml && node bin/azcodex.mjs frappe --remove && ls $AZCODEX_HOME; node bin/azcodex.mjs frappe --bench /nonexistent 2>&1 | tail -1
