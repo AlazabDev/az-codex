@@ -44,6 +44,7 @@ sudo -u "$RUN_AS" -H bash -lc "
   git pull --ff-only origin '$BRANCH'
   pnpm install --frozen-lockfile
   pnpm release:check
+  cargo build --release --manifest-path backend/Cargo.toml --bin backend
   node --env-file='$ENV_FILE' ./bin/azcodex.mjs doctor
   node --env-file='$ENV_FILE' ./scripts/production-doctor.mjs
 "
