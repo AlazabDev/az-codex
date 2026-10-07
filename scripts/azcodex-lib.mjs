@@ -32,7 +32,7 @@ export function foundrySettings(env = process.env) {
 export function normalizeBaseUrl(endpoint, apiVersion = "") {
   const raw = String(endpoint ?? "").trim().replace(/\/+$/, "");
   if (!raw) {
-    throw new Error("AZURE_FOUNDRY_ENDPOINT is not set (e.g. https://my-resource.openai.azure.com).");
+    throw new Error("AZURE_FOUNDRY_ENDPOINT is not set.");
   }
   let url;
   try {
@@ -43,10 +43,19 @@ export function normalizeBaseUrl(endpoint, apiVersion = "") {
   if (url.protocol !== "https:" && !["localhost", "127.0.0.1", "::1"].includes(url.hostname)) {
     throw new Error("AZURE_FOUNDRY_ENDPOINT must use https.");
   }
-  let p = url.pathname.replace(/\/+$/, "");
-  p = p.replace(/\/openai(\/v1)?$/, ""); // accept endpoints that already include /openai[/v1]
-  const suffix = apiVersion ? "/openai" : "/openai/v1";
-  return `${url.origin}${p}${suffix}`;
+
+  const version = String(apiVersion ?? "").trim().toLowerCase();
+  let pathname = url.pathname.replace(/\/+$/, "");
+  pathname = pathname.replace(/\/openai(\/v1)?$/, "");
+
+  // Foundry/OpenAI v1 uses the OpenAI-compatible /openai/v1 surface.
+  // Model versions such as 2026-02-24 are NOT REST API versions.
+  if (!version || version === "v1") {
+    return `${url.origin}${pathname}/openai/v1`;
+  }
+
+  // Retain classic Azure API-version support only for explicit dated/preview API versions.
+  return `${url.origin}${pathname}/openai`;
 }
 
 function tomlString(value) {
@@ -81,7 +90,8 @@ export function buildConfigToml(settings, extraBlock = "") {
     `wire_api = "responses"`,
     `requires_openai_auth = false`
   ];
-  if (settings.apiVersion) {
+  const apiVersion = String(settings.apiVersion ?? "").trim().toLowerCase();
+  if (apiVersion && apiVersion !== "v1") {
     lines.push(`query_params = { api-version = ${tomlString(settings.apiVersion)} }`);
   }
   return `${lines.join("\n")}\n${extraBlock ? `\n${extraBlock.trimEnd()}\n` : ""}`;
