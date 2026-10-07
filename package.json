@@ -41,7 +41,10 @@
     "codex-webui": "./bin/codex-webui.mjs"
   },
   "files": [
-    "backend",
+    "backend/Cargo.lock",
+    "backend/Cargo.toml",
+    "backend/build.rs",
+    "backend/src",
     "bin",
     "build",
     "deploy",
