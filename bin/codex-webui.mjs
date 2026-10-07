@@ -109,8 +109,6 @@ function defaultConfigValues() {
     allowedRoots: [process.cwd()],
     passwordHash: "",
     ownerPasswordHash: "",
-    hcaptchaSiteKey: "",
-    hcaptchaSecretKey: "",
     sessionSecret: createSessionSecret(),
     corsAllowedOrigins: [],
     backendBinaryPath: "",
@@ -231,8 +229,6 @@ function normalizeConfig(rawConfig = {}) {
     dataDir,
     defaultProfileId,
     profiles,
-    hcaptchaSiteKey: String(rawConfig.hcaptchaSiteKey ?? rawConfig.hcaptcha_site_key ?? defaults.hcaptchaSiteKey).trim(),
-    hcaptchaSecretKey: String(rawConfig.hcaptchaSecretKey ?? rawConfig.hcaptcha_secret_key ?? defaults.hcaptchaSecretKey).trim(),
     allowedRoots:
       Array.isArray(rawConfig.allowedRoots) && rawConfig.allowedRoots.length > 0
         ? rawConfig.allowedRoots.map((entry) => expandHome(String(entry)))
@@ -359,12 +355,6 @@ async function promptConfig(existing = null) {
     const passwordHash = password.trim() ? hashPassword(password.trim()) : defaults.passwordHash;
     const ownerPassword = await rl.question("Owner password for terminal/runtime/shutdown actions (optional, leave blank to keep existing): ");
     const ownerPasswordHash = ownerPassword.trim() ? hashPassword(ownerPassword.trim()) : defaults.ownerPasswordHash;
-    const hcaptchaSiteKeyInput = (await rl.question(`hCaptcha site key (optional) [${formatOptionalPrompt(defaults.hcaptchaSiteKey)}]: `)).trim();
-    const hcaptchaSecretKey = (
-      await rl.question(
-        `hCaptcha secret key (optional) [${defaults.hcaptchaSecretKey ? "configured" : "none"}]: `
-      )
-    ).trim() || defaults.hcaptchaSecretKey;
 
     if (!passwordHash) {
       throw new Error("A password is required.");
@@ -390,8 +380,6 @@ async function promptConfig(existing = null) {
           : defaults.corsAllowedOrigins,
       passwordHash,
       ownerPasswordHash,
-      hcaptchaSiteKey: hcaptchaSiteKeyInput || defaults.hcaptchaSiteKey,
-      hcaptchaSecretKey,
       sessionSecret: defaults.sessionSecret || createSessionSecret(),
       backendBinaryPath,
       perSessionAppServers: parseBooleanInput(perSessionAppServersInput, defaults.perSessionAppServers),
@@ -693,9 +681,6 @@ function tunnelSafetyFindings(config) {
   if (!String(config.sessionSecret ?? "").trim() || String(config.sessionSecret ?? "").trim().length < 32) {
     findings.push("Session secret is missing or short.");
   }
-  if (!String(config.hcaptchaSiteKey ?? "").trim() || !String(config.hcaptchaSecretKey ?? "").trim()) {
-    findings.push("hCaptcha is not configured for the public login surface.");
-  }
   const broadRoot = (config.allowedRoots ?? []).find(isBroadAllowedRoot);
   if (broadRoot) {
     findings.push(`Allowed root is broad: ${broadRoot}`);
@@ -721,7 +706,6 @@ function printTunnelSafetyChecklist(config, launch, findings, blockingFindings =
   console.log(`  Public route: ${config.basePath || "/"}`);
   console.log(`  Allowed roots: ${(config.allowedRoots ?? []).join(", ") || "(none)"}`);
   console.log(`  Owner password: ${String(config.ownerPasswordHash ?? "").trim() ? "configured" : "not configured"}`);
-  console.log(`  hCaptcha: ${String(config.hcaptchaSiteKey ?? "").trim() && String(config.hcaptchaSecretKey ?? "").trim() ? "configured" : "not configured"}`);
   if (blockingFindings.length > 0) {
     console.log("");
     console.log("Blocking issues:");
@@ -1136,8 +1120,6 @@ async function startServer(config) {
       CODEX_WEBUI_ALLOWED_ROOTS: config.allowedRoots.join(path.delimiter),
       CODEX_WEBUI_PASSWORD_HASH: String(config.passwordHash),
       CODEX_WEBUI_OWNER_PASSWORD_HASH: String(config.ownerPasswordHash ?? ""),
-      CODEX_WEBUI_HCAPTCHA_SITE_KEY: String(config.hcaptchaSiteKey ?? ""),
-      CODEX_WEBUI_HCAPTCHA_SECRET_KEY: String(config.hcaptchaSecretKey ?? ""),
       CODEX_WEBUI_SESSION_SECRET: String(config.sessionSecret),
       CODEX_WEBUI_INSTANCE_TOKEN: instanceToken,
       CODEX_WEBUI_APP_SERVER_HANDOFF: config.appServerHandoff === false ? "false" : "true",
@@ -1276,9 +1258,6 @@ function printCommandHelp() {
   console.log("  codex-webui tunnel logs    Print recent tunnel logs");
   console.log("");
   console.log("Options:");
-  console.log("  --hcaptcha-site-key <key>      Enable hCaptcha on the login screen with this site key");
-  console.log("  --hcaptcha-secret-key <secret> Enable hCaptcha verification with this secret");
-  console.log("  --disable-hcaptcha             Disable hCaptcha even if it is configured");
   console.log("  codex-webui tunnel start --yes Skip the public-exposure confirmation after reviewing the checklist");
 }
 
@@ -1305,16 +1284,6 @@ function readOptionValue(argv, index, flagName) {
 
 function configInputFromCliOverrides(overrides) {
   const next = {};
-  if (overrides.disableHcaptcha) {
-    next.hcaptchaSiteKey = "";
-    next.hcaptchaSecretKey = "";
-  }
-  if (overrides.hcaptchaSiteKey !== undefined) {
-    next.hcaptchaSiteKey = String(overrides.hcaptchaSiteKey).trim();
-  }
-  if (overrides.hcaptchaSecretKey !== undefined) {
-    next.hcaptchaSecretKey = String(overrides.hcaptchaSecretKey).trim();
-  }
   return next;
 }
 
@@ -1344,22 +1313,6 @@ function parseCliInvocation(argv) {
     }
     if (command === "tunnel" && (argument === "--help" || argument === "-h")) {
       remainingArgs.push(argument);
-      continue;
-    }
-    if (argument === "--disable-hcaptcha") {
-      overrides.disableHcaptcha = true;
-      continue;
-    }
-    if (argument === "--hcaptcha-site-key" || argument.startsWith("--hcaptcha-site-key=")) {
-      const parsed = readOptionValue(restArgs, index, "--hcaptcha-site-key");
-      overrides.hcaptchaSiteKey = parsed.value;
-      index = parsed.nextIndex;
-      continue;
-    }
-    if (argument === "--hcaptcha-secret-key" || argument.startsWith("--hcaptcha-secret-key=")) {
-      const parsed = readOptionValue(restArgs, index, "--hcaptcha-secret-key");
-      overrides.hcaptchaSecretKey = parsed.value;
-      index = parsed.nextIndex;
       continue;
     }
     remainingArgs.push(argument);
