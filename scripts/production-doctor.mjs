@@ -54,7 +54,7 @@ for (const root of allowedRoots) {
 }
 
 const projectRoot = String(process.env.CODEX_WEBUI_PROJECT_ROOT ?? "").trim();
-check("CODEX_WEBUI_PROJECT_ROOT configured", Boolean(projectRoot), "set the deployed application root, normally /opt/az-codex");
+check("CODEX_WEBUI_PROJECT_ROOT configured", Boolean(projectRoot), "set the deployed application root, normally /home/frappe/az-codex");
 if (projectRoot) {
   check(`project root exists: ${projectRoot}`, fs.existsSync(projectRoot), "deploy the repository before starting");
   check(
@@ -93,17 +93,25 @@ check("Foundry deployment", Boolean(foundryModel), "set AZURE_FOUNDRY_MODEL to t
 check("AZCODEX_HOME", Boolean(azcodexHome), "set AZCODEX_HOME, normally /home/frappe/.azcodex");
 
 const defaultProfile = String(process.env.CODEX_WEBUI_DEFAULT_PROFILE_ID ?? "").trim();
-check("default WebUI profile is azcodex", defaultProfile === "azcodex", "set CODEX_WEBUI_DEFAULT_PROFILE_ID=azcodex");
+check("default WebUI profile configured", Boolean(defaultProfile), "set CODEX_WEBUI_DEFAULT_PROFILE_ID");
 
 const profilesRaw = String(process.env.CODEX_WEBUI_PROFILES_JSON ?? "").trim();
 try {
   const profiles = JSON.parse(profilesRaw);
-  const codex = Array.isArray(profiles) ? profiles.find((profile) => profile?.id === "codex") : null;
-  const azcodex = Array.isArray(profiles) ? profiles.find((profile) => profile?.id === "azcodex") : null;
-  check("WebUI codex profile", Boolean(codex?.codexHome), "register the OpenAI codex profile");
-  check("WebUI azcodex profile", Boolean(azcodex?.codexHome), "register the Foundry azcodex profile");
-  if (azcodexHome && azcodex?.codexHome) {
-    check("azcodex profile CODEX_HOME", azcodex.codexHome === azcodexHome, "profile codexHome must match AZCODEX_HOME");
+  const configuredProfiles = Array.isArray(profiles) ? profiles : [];
+  const selected = configuredProfiles.find((profile) => profile?.id === defaultProfile);
+  check(
+    `WebUI default profile exists: ${defaultProfile || "(missing)"}`,
+    Boolean(selected?.codexHome),
+    "CODEX_WEBUI_DEFAULT_PROFILE_ID must reference an entry in CODEX_WEBUI_PROFILES_JSON"
+  );
+  const azcodex = configuredProfiles.find((profile) => profile?.id === "azcodex");
+  if (azcodex && azcodexHome) {
+    check(
+      "azcodex profile CODEX_HOME",
+      azcodex.codexHome === azcodexHome,
+      "azcodex profile codexHome must match AZCODEX_HOME"
+    );
   }
 } catch (error) {
   check("CODEX_WEBUI_PROFILES_JSON", false, `invalid JSON: ${error.message}`);
