@@ -106,8 +106,6 @@ pub(crate) struct Config {
     pub(crate) owner_password_hash: Option<String>,
     pub(crate) viewer_password: Option<String>,
     pub(crate) viewer_password_hash: Option<String>,
-    pub(crate) hcaptcha_site_key: Option<String>,
-    pub(crate) hcaptcha_secret_key: Option<String>,
     pub(crate) session_secret: Option<String>,
     pub(crate) cookie_same_site: SameSiteMode,
     pub(crate) cookie_secure_mode: CookieSecureMode,
@@ -126,24 +124,6 @@ pub(crate) struct Config {
 }
 
 impl Config {
-    pub(crate) fn hcaptcha_site_key(&self) -> Option<&str> {
-        self.hcaptcha_site_key
-            .as_deref()
-            .map(str::trim)
-            .filter(|value| !value.is_empty())
-    }
-
-    pub(crate) fn hcaptcha_secret_key(&self) -> Option<&str> {
-        self.hcaptcha_secret_key
-            .as_deref()
-            .map(str::trim)
-            .filter(|value| !value.is_empty())
-    }
-
-    pub(crate) fn hcaptcha_enabled(&self) -> bool {
-        self.hcaptcha_site_key().is_some() && self.hcaptcha_secret_key().is_some()
-    }
-
     pub(crate) fn from_env() -> Result<Self> {
         let cwd = env::current_dir().context("failed to read current directory")?;
         load_dotenv(&cwd);
@@ -218,8 +198,6 @@ impl Config {
             owner_password_hash: optional_env("CODEX_WEBUI_OWNER_PASSWORD_HASH"),
             viewer_password: optional_env("CODEX_WEBUI_VIEWER_PASSWORD"),
             viewer_password_hash: optional_env("CODEX_WEBUI_VIEWER_PASSWORD_HASH"),
-            hcaptcha_site_key: optional_env("CODEX_WEBUI_HCAPTCHA_SITE_KEY"),
-            hcaptcha_secret_key: optional_env("CODEX_WEBUI_HCAPTCHA_SECRET_KEY"),
             session_secret,
             cookie_same_site: parse_same_site(
                 env::var("CODEX_WEBUI_COOKIE_SAMESITE").ok().as_deref(),
