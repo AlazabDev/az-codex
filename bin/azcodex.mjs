@@ -1,0 +1,168 @@
+#!/usr/bin/env node
+// azcodex — Codex CLI backed by Microsoft Foundry models.
+//   azcodex [codex args...]   run codex with CODEX_HOME=~/.azcodex (Foundry provider)
+//   azcodex setup             write ~/.azcodex/config.toml from AZURE_FOUNDRY_* variables
+//   azcodex doctor            check settings, API key and the codex binary
+//   azcodex webui             register the `codex` + `azcodex` profiles in codex-webui.yml
+// Plain `codex` is untouched and keeps using the default OpenAI account/model.
+import { spawn, spawnSync } from "node:child_process";
+import os from "node:os";
+import path from "node:path";
+import process from "node:process";
+
+import { findBench } from "../mcp/frappe-bench-lib.mjs";
+import {
+  azcodexChildEnv,
+  azcodexHome,
+  ensureAzcodexHome,
+  foundrySettings,
+  installChartInstructions,
+  installFrappe,
+  removeChartInstructions,
+  removeFrappe,
+  normalizeBaseUrl,
+  registerWebuiProfiles
+} from "../scripts/azcodex-lib.mjs";
+
+const codexBin = process.env.AZCODEX_CODEX_BIN || process.env.CODEX_WEBUI_CODEX_BIN || "codex";
+
+function usage() {
+  console.log(`azcodex — Codex on Microsoft Foundry
+
+Usage:
+  azcodex [codex args...]   Run codex against Foundry (CODEX_HOME=${azcodexHome()})
+  azcodex setup             Generate config.toml from the environment
+  azcodex doctor            Validate endpoint, API key and codex binary
+  azcodex webui             Add 'codex' (OpenAI) and 'azcodex' (Foundry) profiles to codex-webui.yml
+  azcodex charts [--openai] [--remove]
+                            Teach the agent to draw charts (AGENTS.md). Default: azcodex home;
+                            --openai: the plain codex home (CODEX_HOME or ~/.codex)
+  azcodex frappe [--bench PATH] [--sites a,b] [--readonly] [--allow-console] [--openai] [--remove]
+                            Enable Frappe bench support: agent instructions (AGENTS.md) plus the
+                            frappe-bench MCP server. Default: azcodex home; --openai: plain codex.
+
+Environment:
+  AZURE_FOUNDRY_ENDPOINT      https://<resource>.openai.azure.com   (required)
+  AZURE_FOUNDRY_API_KEY       API key                                (required)
+  AZURE_FOUNDRY_MODEL         deployment name (default: gpt-5-codex)
+  AZURE_FOUNDRY_API_VERSION   optional; switches to the classic /openai API
+  AZURE_FOUNDRY_API_KEY_ENV   name of the variable holding the key (default AZURE_FOUNDRY_API_KEY)
+  AZCODEX_HOME                default ~/.azcodex`);
+}
+
+function requireKey(settings) {
+  if (!process.env[settings.apiKeyEnv]) {
+    throw new Error(`${settings.apiKeyEnv} is not set. Export your Foundry API key first.`);
+  }
+}
+
+async function main() {
+  const [command, ...rest] = process.argv.slice(2);
+  const settings = foundrySettings();
+
+  if (command === "--help" || command === "-h" || command === "help") return usage();
+
+  if (command === "setup") {
+    const result = await ensureAzcodexHome(settings);
+    await installChartInstructions(azcodexHome());
+    console.log(`${result.configPath}: ${result.reason}`);
+    console.log(`base_url: ${normalizeBaseUrl(settings.endpoint, settings.apiVersion)}  model: ${settings.model}`);
+    return;
+  }
+
+  if (command === "doctor") {
+    let ok = true;
+    const check = (label, pass, hint = "") => {
+      ok &&= pass;
+      console.log(`${pass ? "OK  " : "FAIL"} ${label}${pass || !hint ? "" : ` — ${hint}`}`);
+    };
+    let baseUrl = "";
+    try {
+      baseUrl = normalizeBaseUrl(settings.endpoint, settings.apiVersion);
+      check(`endpoint → ${baseUrl}`, true);
+    } catch (error) {
+      check("endpoint", false, error.message);
+    }
+    check(`${settings.apiKeyEnv} set`, Boolean(process.env[settings.apiKeyEnv]), "export your Foundry API key");
+    const probe = spawnSync(codexBin, ["--version"], { encoding: "utf8" });
+    check(`${codexBin} installed`, probe.status === 0, "npm install -g @openai/codex");
+    console.log(`model (deployment): ${settings.model}`);
+    console.log(`CODEX_HOME: ${azcodexHome()}`);
+    process.exit(ok ? 0 : 1);
+  }
+
+  if (command === "charts") {
+    const dir = rest.includes("--openai") ? process.env.CODEX_HOME || path.join(os.homedir(), ".codex") : azcodexHome();
+    const result = rest.includes("--remove") ? await removeChartInstructions(dir) : await installChartInstructions(dir);
+    console.log(`${result.file}: ${result.changed ? (rest.includes("--remove") ? "removed" : "installed") : "unchanged"}`);
+    return;
+  }
+
+  if (command === "frappe") {
+    const openai = rest.includes("--openai");
+    const home = openai ? process.env.CODEX_HOME || path.join(os.homedir(), ".codex") : azcodexHome();
+    if (rest.includes("--remove")) {
+      const result = await removeFrappe(home, { openai });
+      if (!openai && settings.endpoint) await ensureAzcodexHome(settings);
+      console.log(`Frappe support removed from ${home} (${result.agents.changed ? "AGENTS.md updated" : "nothing to remove"}).`);
+      return;
+    }
+    const option = (name) => {
+      const index = rest.indexOf(name);
+      return index >= 0 ? rest[index + 1] : undefined;
+    };
+    const bench = await findBench(option("--bench") || process.env.FRAPPE_BENCH_PATH || process.cwd());
+    if (!bench) {
+      throw new Error("No bench found. Pass --bench /path/to/frappe-bench (a folder containing apps/ and sites/apps.txt).");
+    }
+    const state = {
+      benchPath: bench,
+      sites: (option("--sites") ?? "").split(",").map((v) => v.trim()).filter(Boolean),
+      readonly: rest.includes("--readonly"),
+      allowConsole: rest.includes("--allow-console")
+    };
+    await installFrappe(home, state, { openai });
+    if (!openai && settings.endpoint) await ensureAzcodexHome(settings);
+    console.log(`Frappe support enabled in ${home}`);
+    console.log(`  bench:   ${bench}`);
+    console.log(`  sites:   ${state.sites.length ? state.sites.join(", ") : "developer-mode sites only"}`);
+    console.log(`  mode:    ${state.readonly ? "read-only" : "read/write"}${state.allowConsole ? ", console enabled" : ""}`);
+    if (!openai && !settings.endpoint) {
+      console.log("  note:    config.toml is generated when AZURE_FOUNDRY_ENDPOINT is set (azcodex setup).");
+    }
+    console.log("Start a new session so Codex loads AGENTS.md and the MCP server.");
+    return;
+  }
+
+  if (command === "webui") {
+    const dataDir = path.join(os.homedir(), ".codex", "codex-webui", "data");
+    const yamlPath = path.join(os.homedir(), ".codex", "codex-webui.yml");
+    await ensureAzcodexHome(settings);
+    await installChartInstructions(azcodexHome());
+    await registerWebuiProfiles(yamlPath, {
+      openaiHome: process.env.CODEX_HOME || path.join(os.homedir(), ".codex"),
+      azHome: azcodexHome(),
+      dataDir
+    });
+    console.log(`Profiles 'codex' (OpenAI, default) and 'azcodex' (Foundry) saved to ${yamlPath}.`);
+    console.log("Restart with: codex-webui restart   (export AZURE_FOUNDRY_API_KEY before starting)");
+    return;
+  }
+
+  // Default: run codex with the Foundry provider.
+  requireKey(settings);
+  await ensureAzcodexHome(settings);
+  await installChartInstructions(azcodexHome());
+  const args = command === undefined ? [] : [command, ...rest];
+  const child = spawn(codexBin, args, { stdio: "inherit", env: azcodexChildEnv(settings) });
+  child.on("error", (error) => {
+    console.error(`failed to start ${codexBin}: ${error.message}`);
+    process.exit(127);
+  });
+  child.on("exit", (code, signal) => process.exit(signal ? 128 : (code ?? 0)));
+}
+
+main().catch((error) => {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+});
