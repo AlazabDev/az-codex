@@ -8,7 +8,6 @@ import YAML from "yaml";
 
 export const MANAGED_MARKER = "# managed-by: azcodex (delete this line to keep your manual edits)";
 export const DEFAULT_API_KEY_ENV = "AZURE_FOUNDRY_API_KEY";
-export const DEFAULT_MODEL = "gpt-5-codex";
 
 export function azcodexHome(env = process.env) {
   return path.resolve(env.AZCODEX_HOME || path.join(os.homedir(), ".azcodex"));
@@ -19,8 +18,8 @@ export function foundrySettings(env = process.env) {
   return {
     endpoint: String(env.AZURE_FOUNDRY_ENDPOINT ?? "").trim(),
     apiKeyEnv: String(env.AZURE_FOUNDRY_API_KEY_ENV ?? DEFAULT_API_KEY_ENV).trim() || DEFAULT_API_KEY_ENV,
-    // On Azure, "model" is the *deployment name* of the model inside your Foundry resource.
-    model: String(env.AZURE_FOUNDRY_MODEL ?? DEFAULT_MODEL).trim() || DEFAULT_MODEL,
+    // On Azure, "model" is the deployment name, not a guessed base-model name.
+    model: String(env.AZURE_FOUNDRY_MODEL ?? "").trim(),
     apiVersion: String(env.AZURE_FOUNDRY_API_VERSION ?? "").trim()
   };
 }
@@ -54,8 +53,21 @@ function tomlString(value) {
   return JSON.stringify(String(value));
 }
 
+export function validateFoundrySettings(settings, env = process.env) {
+  const errors = [];
+  if (!String(settings?.endpoint ?? "").trim()) errors.push("AZURE_FOUNDRY_ENDPOINT is required.");
+  if (!String(settings?.model ?? "").trim()) errors.push("AZURE_FOUNDRY_MODEL is required and must be the Azure deployment name.");
+  const keyEnv = String(settings?.apiKeyEnv ?? DEFAULT_API_KEY_ENV).trim() || DEFAULT_API_KEY_ENV;
+  if (!String(env[keyEnv] ?? "").trim()) errors.push(`${keyEnv} is required.`);
+  if (errors.length) throw new Error(errors.join(" "));
+  return settings;
+}
+
 /** Build the CODEX_HOME/config.toml used by azcodex. */
 export function buildConfigToml(settings, extraBlock = "") {
+  if (!String(settings?.model ?? "").trim()) {
+    throw new Error("AZURE_FOUNDRY_MODEL is required and must be the Azure deployment name.");
+  }
   const baseUrl = normalizeBaseUrl(settings.endpoint, settings.apiVersion);
   const lines = [
     MANAGED_MARKER,
