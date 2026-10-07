@@ -17,7 +17,8 @@ import {
   removeChartInstructions,
   removeFrappe,
   normalizeBaseUrl,
-  registerWebuiProfiles
+  registerWebuiProfiles,
+  validateFoundrySettings
 } from "../scripts/azcodex-lib.mjs";
 import {
   inspectRegistry,
@@ -33,7 +34,9 @@ function usage() {
 Usage:
   azcodex [codex args...]   Run codex against Foundry (CODEX_HOME=${azcodexHome()})
   azcodex setup             Generate config.toml from the environment
-  azcodex doctor            Validate Foundry, Codex and registered integrations
+  azcodex doctor [--offline]
+                            Validate Codex, integrations and a live Foundry round-trip
+                            (--offline skips the billable live request)
   azcodex integrations      List registered Alazab integrations
   azcodex integrations doctor [--json]
                             Validate all enabled integration targets
@@ -48,16 +51,35 @@ Usage:
 Environment:
   AZURE_FOUNDRY_ENDPOINT      https://<resource>.openai.azure.com   (required)
   AZURE_FOUNDRY_API_KEY       API key                                (required)
-  AZURE_FOUNDRY_MODEL         deployment name (default: gpt-5-codex)
+  AZURE_FOUNDRY_MODEL         Azure deployment name                     (required)
   AZURE_FOUNDRY_API_VERSION   optional; switches to the classic /openai API
   AZURE_FOUNDRY_API_KEY_ENV   name of the variable holding the key (default AZURE_FOUNDRY_API_KEY)
   AZCODEX_HOME                default ~/.azcodex`);
 }
 
-function requireKey(settings) {
-  if (!process.env[settings.apiKeyEnv]) {
-    throw new Error(`${settings.apiKeyEnv} is not set. Export your Foundry API key first.`);
-  }
+function requireFoundry(settings) {
+  return validateFoundrySettings(settings, process.env);
+}
+
+function liveFoundryProbe(settings) {
+  const marker = "AZCODEX_FOUNDRY_OK";
+  const result = spawnSync(
+    codexBin,
+    ["exec", "--skip-git-repo-check", `Reply with exactly: ${marker}`],
+    {
+      cwd: os.tmpdir(),
+      encoding: "utf8",
+      timeout: 90_000,
+      env: azcodexChildEnv(settings)
+    }
+  );
+  const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`.trim();
+  return {
+    ok: result.status === 0 && output.includes(marker),
+    status: result.status,
+    timedOut: Boolean(result.error?.code === "ETIMEDOUT"),
+    detail: output.split(/\r?\n/u).slice(-8).join("\n")
+  };
 }
 
 async function printIntegrations(args) {
@@ -104,6 +126,7 @@ async function main() {
   if (command === "--help" || command === "-h" || command === "help") return usage();
 
   if (command === "setup") {
+    requireFoundry(settings);
     const result = await ensureAzcodexHome(settings);
     await installChartInstructions(azcodexHome());
     console.log(`${result.configPath}: ${result.reason}`);
@@ -113,6 +136,7 @@ async function main() {
 
   if (command === "doctor") {
     let ok = true;
+    const offline = rest.includes("--offline");
     const check = (label, pass, hint = "") => {
       ok &&= pass;
       console.log(`${pass ? "OK  " : "FAIL"} ${label}${pass || !hint ? "" : ` — ${hint}`}`);
@@ -125,9 +149,11 @@ async function main() {
       check("endpoint", false, error.message);
     }
 
+    check("AZURE_FOUNDRY_MODEL", Boolean(settings.model), "set the exact Azure deployment name");
     check(`${settings.apiKeyEnv} set`, Boolean(process.env[settings.apiKeyEnv]), "export your Foundry API key");
-    const probe = spawnSync(codexBin, ["--version"], { encoding: "utf8" });
-    check(`${codexBin} installed`, probe.status === 0, "npm install -g @openai/codex");
+
+    const codexProbe = spawnSync(codexBin, ["--version"], { encoding: "utf8" });
+    check(`${codexBin} installed`, codexProbe.status === 0, "npm install -g @openai/codex");
 
     try {
       const registry = await inspectRegistry();
@@ -140,7 +166,25 @@ async function main() {
       check("integration registry", false, error.message);
     }
 
-    console.log(`model (deployment): ${settings.model}`);
+    if (ok && !offline) {
+      try {
+        requireFoundry(settings);
+        const config = await ensureAzcodexHome(settings);
+        check(`Foundry config (${config.reason})`, true);
+        const probe = liveFoundryProbe(settings);
+        check(
+          "live Codex → Foundry round-trip",
+          probe.ok,
+          probe.timedOut ? "request timed out" : (probe.detail || `codex exited with status ${probe.status}`)
+        );
+      } catch (error) {
+        check("live Codex → Foundry round-trip", false, error.message);
+      }
+    } else if (offline) {
+      console.log("SKIP live Codex → Foundry round-trip (--offline)");
+    }
+
+    console.log(`model (deployment): ${settings.model || "(missing)"}`);
     console.log(`CODEX_HOME: ${azcodexHome()}`);
     process.exit(ok ? 0 : 1);
   }
@@ -196,6 +240,7 @@ async function main() {
   }
 
   if (command === "webui") {
+    requireFoundry(settings);
     const dataDir = path.join(os.homedir(), ".codex", "codex-webui", "data");
     const yamlPath = path.join(os.homedir(), ".codex", "codex-webui.yml");
     await ensureAzcodexHome(settings);
@@ -210,7 +255,7 @@ async function main() {
     return;
   }
 
-  requireKey(settings);
+  requireFoundry(settings);
   await ensureAzcodexHome(settings);
   await installChartInstructions(azcodexHome());
   const args = command === undefined ? [] : [command, ...rest];
