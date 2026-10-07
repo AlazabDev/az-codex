@@ -1,7 +1,6 @@
 <script lang="ts">
   import { ArrowRight, ChevronDown, Eye, EyeOff, LockKeyhole, ShieldCheck } from "lucide-svelte";
 
-  import type { LoginHcaptchaConfig } from "$lib/types";
 
   type LocaleOption = {
     value: string;
@@ -25,9 +24,6 @@
     loginPassword = $bindable(""),
     loginBusy,
     loginMessage,
-    loginHcaptcha,
-    loginHcaptchaToken,
-    loginHcaptchaContainer = $bindable(null),
     onLocaleChange,
     onSubmit
   }: {
@@ -37,9 +33,6 @@
     loginPassword: string;
     loginBusy: boolean;
     loginMessage: string;
-    loginHcaptcha: LoginHcaptchaConfig;
-    loginHcaptchaToken: string;
-    loginHcaptchaContainer: HTMLDivElement | null;
     onLocaleChange: (locale: string) => void;
     onSubmit: () => void | Promise<void>;
   } = $props();
@@ -146,17 +139,11 @@
           </div>
         </label>
 
-        {#if loginHcaptcha.enabled && loginHcaptcha.siteKey}
-          <div
-            bind:this={loginHcaptchaContainer}
-            class="az-login-hcaptcha"
-          ></div>
-        {/if}
 
         <button
           class="az-login-submit"
           data-testid="login-submit"
-          disabled={loginBusy || (loginHcaptcha.enabled && !loginHcaptchaToken)}
+          disabled={loginBusy}
           type="submit"
         >
           <span>{loginBusy ? ui.signingIn : ui.signIn}</span>
@@ -461,16 +448,6 @@
   .az-login-password-toggle:hover {
     background: #f2f4f7;
     color: #475467;
-  }
-
-  .az-login-hcaptcha {
-    min-height: 82px;
-    overflow: hidden;
-    margin-top: 1.1rem;
-    border: 1px solid #e4e7ec;
-    border-radius: .75rem;
-    background: #fff;
-    padding: .7rem;
   }
 
   .az-login-submit {
