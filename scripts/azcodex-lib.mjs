@@ -235,52 +235,11 @@ export const FRAPPE_END = "<!-- codex-webui:frappe:end -->";
 export const MCP_START = "# >>> frappe-bench (managed by azcodex) >>>";
 export const MCP_END = "# <<< frappe-bench <<<";
 
-export const FRAPPE_INSTRUCTIONS = `${FRAPPE_START}
-## Frappe / ERPNext bench development
-
-You work inside a Frappe bench (\`apps/\`, \`sites/\`, \`env/\`, \`logs/\`). Follow these rules.
-
-Where to change code
-- Only edit custom apps under \`apps/<app>/\`. Never edit \`apps/frappe\` or \`apps/erpnext\`
-  (use hooks, doc_events, custom fields and overrides instead).
-- Never commit \`sites/*/site_config.json\`, \`sites/common_site_config.json\`, secrets or backups.
-- Keep the app's existing style: Frappe apps use tabs in Python; follow the app's
-  \`pyproject.toml\` / pre-commit / ruff settings and the code around your change.
-
-Frappe conventions
-- DocTypes: change them through Desk with \`developer_mode\` on, or edit the JSON together with its
-  controller and test; afterwards run \`migrate\` so the schema syncs. Folder layout is
-  \`<app>/<module>/doctype/<doctype_snake_case>/\` (\`.json\`, \`.py\`, \`.js\`, \`test_*.py\`).
-- Data changes go into a patch: a module with \`execute()\` listed in \`patches.txt\`
-  (\`[pre_model_sync]\` / \`[post_model_sync]\`). Make patches idempotent. Static setup data goes in fixtures.
-- Hooks live in \`hooks.py\` (doc_events, scheduler_events, fixtures, app_include_js/css, override_*).
-- Server API: \`@frappe.whitelist()\` only for what clients need, always check permissions
-  (\`frappe.has_permission\`, \`doc.check_permission\`, \`frappe.only_for\`). \`frappe.get_all\` ignores
-  permissions, \`frappe.get_list\` applies them.
-- Database: use \`frappe.qb\` or parameterised \`frappe.db.sql(query, values)\`; never build SQL with string
-  formatting. Avoid queries inside loops; do not call \`frappe.db.commit()\` in controllers.
-- User-visible text goes through \`_("...")\` (Python) / \`__("...")\` (JS) and into \`translations/ar.csv\`
-  when the app is translated. Keep Arabic/RTL in mind for print formats and web pages.
-- Tests: follow the base class used by the app's existing tests; keep them independent of site data.
-
-Commands (run from the bench root, always with an explicit \`--site\`)
-- \`bench --site <site> migrate\` after DocType/patch/hooks changes; \`bench build --app <app>\` after JS/CSS changes.
-- \`bench --site <site> run-tests --app <app> [--module <dotted.module>] [--doctype "<DocType>"]\`.
-- Logs: \`logs/*.log\`, and the Error Log / Scheduled Job Log DocTypes.
-- Take a backup (\`bench --site <site> backup\`) before migrations that change data.
-
-Never run without explicit approval from the user
-- \`bench drop-site\`, \`reinstall\`, \`restore\`, \`bench update\`, \`bench remove-app\`, \`uninstall-app\`,
-  \`--force\`, \`reset\`, \`clear-cache\` on production, or raw \`DELETE\`/\`DROP\`/\`TRUNCATE\`.
-- Anything against a site that is not in developer mode, and any command that sends email/SMS or touches payments.
-
-Workflow
-1. If the \`frappe-bench\` MCP tools exist, prefer them over raw shell: start with \`bench_status\`, inspect with
-   \`list_doctypes\` / \`get_doc_schema\` / \`tail_logs\`, verify with \`run_tests\`, \`migrate\`, \`build\`.
-2. Make the smallest change, add or update a test, run the tests, run \`migrate\`/\`build\` when needed.
-3. Do not report a task as finished until the tests pass; if you could not run them, say so.
-${FRAPPE_END}
-`;
+export async function loadFrappeInstructions() {
+  const templatePath = fileURLToPath(new URL("../templates/frappe/AGENTS.md", import.meta.url));
+  const body = (await fs.readFile(templatePath, "utf8")).trim();
+  return `${FRAPPE_START}\n${body}\n${FRAPPE_END}\n`;
+}
 
 export function frappeServerPath() {
   return fileURLToPath(new URL("../mcp/frappe-bench.mjs", import.meta.url));
@@ -319,7 +278,8 @@ export async function readFrappeState(home) {
  * - plain codex home (openai: true): the block is inserted into the user's config.toml.
  */
 export async function installFrappe(home, state, { openai = false } = {}) {
-  const agents = await upsertManaged(path.join(home, "AGENTS.md"), FRAPPE_START, FRAPPE_END, FRAPPE_INSTRUCTIONS);
+  const instructions = await loadFrappeInstructions();
+  const agents = await upsertManaged(path.join(home, "AGENTS.md"), FRAPPE_START, FRAPPE_END, instructions);
   let config;
   if (openai) {
     config = await upsertManaged(path.join(home, "config.toml"), MCP_START, MCP_END, frappeMcpBlock(state));
