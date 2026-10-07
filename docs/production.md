@@ -7,7 +7,9 @@ This runbook targets the Alazab OCI deployment and keeps the WebUI bound to loop
 - Repository: `/opt/az-codex`
 - Runtime user: `frappe`
 - Environment: `/etc/az-codex/az-codex.env`
-- Codex home: `/home/frappe/.codex`
+- OpenAI Codex home: `/home/frappe/.codex`
+- Foundry Codex home: `/home/frappe/.azcodex`
+- Default WebUI profile: `azcodex`
 - Frappe bench: `/home/frappe/frappe-bench`
 - Public host: `https://codex.alazab.com`
 - Internal WebUI: `http://127.0.0.1:4173`
@@ -21,7 +23,7 @@ pnpm install --frozen-lockfile
 pnpm release:check
 ```
 
-`release:check` runs the TypeScript/Svelte checks, Rust checks, unit tests, production build, compatibility/security verification, and an npm package dry-run.
+`release:check` runs the TypeScript/Svelte checks, Rust checks, unit tests, production build, compatibility/security verification, a constrained-memory runtime smoke test, and an npm package dry-run.
 
 ## Secrets
 
@@ -40,6 +42,35 @@ openssl rand -hex 48
 ```
 
 Never commit the populated production environment file.
+
+Foundry is required for the production default profile. Set all of:
+
+```bash
+AZURE_FOUNDRY_ENDPOINT=https://<resource>.openai.azure.com
+AZURE_FOUNDRY_API_KEY=<server-secret>
+AZURE_FOUNDRY_MODEL=<exact-azure-deployment-name>
+AZCODEX_HOME=/home/frappe/.azcodex
+```
+
+Do not rely on a guessed model name. `AZURE_FOUNDRY_MODEL` is the Azure deployment name and is intentionally mandatory.
+
+The production WebUI exposes two isolated profiles:
+
+- `codex` → `/home/frappe/.codex` (OpenAI)
+- `azcodex` → `/home/frappe/.azcodex` (Microsoft Foundry, production default)
+
+Validate the Foundry path before starting the service:
+
+```bash
+set -a
+source /etc/az-codex/az-codex.env
+set +a
+
+pnpm foundry:doctor
+pnpm prod:doctor
+```
+
+`foundry:doctor` performs a small live `codex exec` round-trip through the configured Foundry deployment. Use `pnpm foundry:doctor:offline` only for configuration-only diagnostics.
 
 ## systemd
 
@@ -94,6 +125,12 @@ git checkout main
 git pull --ff-only origin main
 pnpm install --frozen-lockfile
 pnpm release:check
+
+set -a
+source /etc/az-codex/az-codex.env
+set +a
+pnpm prod:doctor
+
 sudo systemctl reload az-codex.service
 curl -fsS http://127.0.0.1:4173/healthz
 ```
