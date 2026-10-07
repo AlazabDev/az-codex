@@ -43,6 +43,7 @@
     "backend",
     "bin",
     "build",
+    "deploy",
     "dist",
     "docs",
     "mcp",
@@ -61,24 +62,18 @@
     "start": "node ./bin/codex-webui.mjs",
     "cli": "node ./bin/codex-webui.mjs",
     "azcodex": "node ./bin/azcodex.mjs",
-
     "dev": "pnpm paraglide:compile && vite dev",
     "dev:web": "pnpm dev",
     "dev:gateway": "setpriv --no-new-privs --inh-caps=-all --ambient-caps=-all cargo run --manifest-path backend/Cargo.toml",
-
     "build": "pnpm paraglide:compile && svelte-kit sync && node ./scripts/build-app.mjs",
     "build:web": "pnpm build",
     "build:gateway": "cargo build --manifest-path backend/Cargo.toml",
     "build:cross": "node ./scripts/build-cross.mjs",
     "build:e2e-fake": "cargo build --manifest-path backend/Cargo.toml --bin fake_codex_app_server",
-
     "preview": "vite preview",
-
     "paraglide:compile": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide --strategy cookie globalVariable preferredLanguage baseLocale --is-server 'import.meta.env.SSR' --emit-ts-declarations",
-
     "check": "pnpm paraglide:compile && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:gateway": "cargo check --manifest-path backend/Cargo.toml",
-
     "verify": "pnpm verify:static-build && pnpm verify:api-parity && pnpm verify:codex-compat && pnpm verify:security-regressions && pnpm verify:tunnel-safety",
     "verify:api-parity": "node ./scripts/verify-api-parity.mjs",
     "verify:codex-compat": "node ./scripts/verify-codex-compat.mjs",
@@ -87,7 +82,6 @@
     "verify:security-regressions": "node ./scripts/verify-security-regressions.mjs",
     "verify:low-memory-smoke": "node ./scripts/verify-low-memory-smoke.mjs",
     "verify:tunnel-safety": "node ./scripts/verify-tunnel-safety.mjs",
-
     "test": "pnpm test:unit",
     "test:unit": "node --test ./scripts/azcodex.test.mjs ./scripts/frappe-bench.test.mjs ./scripts/ws-client-backpressure.test.mjs ./frontend-tests/chart-renderer.test.mjs",
     "test:ws-client-backpressure": "node --test ./scripts/ws-client-backpressure.test.mjs",
@@ -96,21 +90,18 @@
     "test:charts": "node --test ./frontend-tests/chart-renderer.test.mjs",
     "test:e2e": "pnpm build && pnpm verify:static-build && pnpm verify:api-parity && pnpm build:e2e-fake && playwright test",
     "test:all": "pnpm test:unit && pnpm test:e2e",
-
     "gateway:dev": "pnpm dev:gateway",
     "gateway:check": "pnpm check:gateway",
     "gateway:build": "pnpm build:gateway",
-
     "ws:debug": "node ./scripts/ws-debug-client.mjs",
-
     "hash-password": "node ./scripts/hash-password.mjs",
-
     "frappe:install": "node ./scripts/install-frappe-profile.mjs",
     "frappe:mcp": "node ./mcp/frappe-bench.mjs",
     "frappe:test": "node --test ./scripts/frappe-bench.test.mjs",
-
     "ci": "pnpm check && pnpm check:gateway && pnpm test:unit && pnpm build && pnpm verify",
-    "prepublishOnly": "pnpm ci"
+    "pack:check": "npm pack --dry-run",
+    "release:check": "pnpm ci && pnpm pack:check",
+    "prepublishOnly": "pnpm release:check"
   },
   "dependencies": {
     "@inlang/paraglide-js": "^2.16.0",
