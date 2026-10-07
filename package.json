@@ -46,8 +46,7 @@
     "check": "pnpm paraglide:compile && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test:e2e": "pnpm build && pnpm verify:static-build && pnpm verify:api-parity && pnpm build:e2e-fake && playwright test",
     "hash-password": "node scripts/hash-password.mjs",
-    "test:azcodex": "node --test ./scripts/azcodex.test.mjs ./scripts/frappe-bench.test.mjs",
-    "test:frontend": "node --test ./frontend-tests/*.test.mjs"
+    "frappe:install": "node scripts/install-frappe-profile.mjs"
   },
   "dependencies": {
     "@inlang/paraglide-js": "^2.16.0",
