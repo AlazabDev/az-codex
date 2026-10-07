@@ -13,8 +13,6 @@
   "signing_in": "Signing in...",
   "enter_password": "Enter your password.",
   "login_failed": "Sign-in failed.",
-  "complete_hcaptcha": "Complete the hCaptcha challenge before signing in.",
-  "hcaptcha_load_failed": "Failed to load hCaptcha. Refresh and try again.",
   "startup": "Startup",
   "autostart_title": "Automatic startup",
   "autostart_description": "Keep codex-webui available after reboot by registering a per-user startup entry.",
