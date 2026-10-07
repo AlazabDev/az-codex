@@ -78,8 +78,8 @@ export function buildConfigToml(settings, extraBlock = "") {
     `name = "Microsoft Foundry"`,
     `base_url = ${tomlString(baseUrl)}`,
     `env_key = ${tomlString(settings.apiKeyEnv)}`,
-    `env_http_headers = { "api-key" = ${tomlString(settings.apiKeyEnv)} }`,
-    `wire_api = "responses"`
+    `wire_api = "responses"`,
+    `requires_openai_auth = false`
   ];
   if (settings.apiVersion) {
     lines.push(`query_params = { api-version = ${tomlString(settings.apiVersion)} }`);
