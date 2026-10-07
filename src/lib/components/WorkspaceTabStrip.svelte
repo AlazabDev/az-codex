@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { Activity, Brain, FileDiff, FileText, GitBranch, History, Layout, MessageSquare, Monitor, Settings, Terminal, X } from "lucide-svelte";
+  import { Activity, Brain, FileDiff, FileText, GitBranch, History, Layout, MessageSquare, Monitor, Server, Settings, Terminal, X } from "lucide-svelte";
 
   type WorkspaceTab = {
     id: string;
     label: string;
-    kind: "chat" | "tasks" | "git" | "settings" | "computer" | "diagnostics" | "memory" | "git-diff" | "code-diff" | "file" | "terminal";
+    kind: "chat" | "tasks" | "git" | "settings" | "computer" | "diagnostics" | "production" | "memory" | "git-diff" | "code-diff" | "file" | "terminal";
   };
 
   let {
@@ -49,6 +49,8 @@
         <Monitor size={14} />
       {:else if tab.kind === "diagnostics"}
         <Activity size={14} />
+      {:else if tab.kind === "production"}
+        <Server size={14} />
       {:else if tab.kind === "memory"}
         <Brain size={14} />
       {:else if tab.kind === "git-diff"}
