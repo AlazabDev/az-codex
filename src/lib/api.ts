@@ -47,6 +47,8 @@ import type {
   NotificationSettings,
   ParserDiagnosticsPayload,
   PromptPreset,
+  ProductionCheckId,
+  ProductionCheckPayload,
   SavedSessionFilter,
   SelectedSkill,
   SessionDetailPayload,
@@ -349,6 +351,10 @@ export const api = {
 
   getRuntimeStatus() {
     return ws.request<CodexRuntimeStatus>("runtime/status");
+  },
+
+  runProductionCheck(check: ProductionCheckId) {
+    return ws.request<ProductionCheckPayload>("production/check", { check });
   },
 
   getRuntimeProcesses() {
