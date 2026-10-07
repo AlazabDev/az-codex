@@ -29,6 +29,7 @@ pub(crate) fn ws_method_requires_owner(method: &str, params: &Value) -> bool {
     matches!(
         method,
         "config/update"
+            | "production/check"
             | "codex/features/set"
             | "codex/marketplaces/add"
             | "codex/marketplaces/remove"
