@@ -4,20 +4,22 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-Type=oneshot
-RemainAfterExit=yes
+Type=simple
 User=frappe
 Group=frappe
 WorkingDirectory=/home/frappe/az-codex
-# Materialize /home/frappe/.azcodex/config.toml from the production Foundry env
-# before the WebUI starts. This fails closed when endpoint/key/deployment are missing.
+
+# The Rust gateway loads /home/frappe/az-codex/.env itself from the working directory.
+# Keep Foundry config materialization as a pre-start validation step.
 ExecStartPre=/usr/bin/node --env-file=/home/frappe/az-codex/.env /home/frappe/az-codex/bin/azcodex.mjs setup
-ExecStart=/usr/bin/node --env-file=/home/frappe/az-codex/.env /home/frappe/az-codex/bin/codex-webui.mjs
-ExecStartPost=/usr/bin/curl --fail --silent --show-error --retry 20 --retry-delay 1 http://127.0.0.1:4173/healthz
-ExecReload=/usr/bin/node --env-file=/home/frappe/az-codex/.env /home/frappe/az-codex/bin/codex-webui.mjs restart
-ExecStop=/usr/bin/node --env-file=/home/frappe/az-codex/.env /home/frappe/az-codex/bin/codex-webui.mjs stop
-TimeoutStartSec=60
+ExecStart=/home/frappe/az-codex/dist/backend/aarch64-unknown-linux-gnu/backend
+
+Restart=on-failure
+RestartSec=3
+TimeoutStartSec=30
 TimeoutStopSec=30
+KillSignal=SIGTERM
+
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
