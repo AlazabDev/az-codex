@@ -36,10 +36,7 @@ sudo -u "$RUN_AS" -H bash -lc "
   pnpm install --frozen-lockfile
   pnpm build
   pnpm pack:check
-  set -a
-  source '$ENV_FILE'
-  set +a
-  pnpm foundry:doctor
+  node --env-file='$ENV_FILE' ./bin/azcodex.mjs doctor
 "
 
 systemctl restart az-codex.service
