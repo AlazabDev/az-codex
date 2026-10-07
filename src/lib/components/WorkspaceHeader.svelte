@@ -15,6 +15,7 @@
     Plus,
     RotateCcw,
     Search,
+    Server,
     Settings,
     Terminal,
     User,
@@ -76,6 +77,7 @@
     onOpenGitTab,
     onOpenComputerTab,
     onOpenDiagnosticsTab,
+    onOpenProductionTab,
     onOpenMemoryTab,
     onOpenSettingsTab,
     onCreateTerminalTab
@@ -119,6 +121,7 @@
     onOpenGitTab: () => void;
     onOpenComputerTab: () => void;
     onOpenDiagnosticsTab: () => void;
+    onOpenProductionTab: () => void;
     onOpenMemoryTab: () => void;
     onOpenSettingsTab: () => void;
     onCreateTerminalTab: () => void | Promise<void>;
@@ -417,6 +420,10 @@
           <button class="workspace-open-menu__item ui-animated-button ui-animated-button--soft group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors" onclick={() => { workspaceMenuOpen = false; onOpenDiagnosticsTab(); }} type="button">
             <Activity size={16} class="text-gray-400 group-hover:text-amber-600" />
             <span>{ui.diagnostics}</span>
+          </button>
+          <button class="workspace-open-menu__item ui-animated-button ui-animated-button--soft group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors" onclick={() => { workspaceMenuOpen = false; onOpenProductionTab(); }} type="button">
+            <Server size={16} class="text-gray-400 group-hover:text-amber-600" />
+            <span>Production / الإنتاج</span>
           </button>
           <button class="workspace-open-menu__item ui-animated-button ui-animated-button--soft group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors" onclick={() => { workspaceMenuOpen = false; onOpenMemoryTab(); }} type="button">
             <Brain size={16} class="text-gray-400 group-hover:text-amber-600" />
