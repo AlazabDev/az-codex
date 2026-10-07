@@ -12,7 +12,7 @@ WorkingDirectory=/home/frappe/az-codex
 # The Rust gateway loads /home/frappe/az-codex/.env itself from the working directory.
 # Keep Foundry config materialization as a pre-start validation step.
 ExecStartPre=/usr/bin/node --env-file=/home/frappe/az-codex/.env /home/frappe/az-codex/bin/azcodex.mjs setup
-ExecStart=/home/frappe/az-codex/dist/backend/aarch64-unknown-linux-gnu/backend
+ExecStart=/home/frappe/az-codex/backend/target/release/backend
 
 Restart=on-failure
 RestartSec=3
