@@ -895,6 +895,22 @@ export type CodexRuntimeActionPayload = {
   runtime: CodexRuntimeStatus;
 };
 
+export type ProductionCheckId = "release" | "foundry" | "production" | "mcp";
+
+export type ProductionCheckPayload = {
+  ok: boolean;
+  check: ProductionCheckId;
+  script: string;
+  cwd: string;
+  exitCode: number | null;
+  startedAt: number;
+  completedAt: number;
+  durationMs: number;
+  stdout: string;
+  stderr: string;
+  truncated: boolean;
+};
+
 export type CodexRuntimeProcessSession = {
   sessionId: string;
   title: string | null;
