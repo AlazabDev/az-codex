@@ -53,6 +53,17 @@ for (const root of allowedRoots) {
   check(`allowed root exists: ${root}`, fs.existsSync(root), "create/mount the workspace before starting");
 }
 
+const projectRoot = String(process.env.CODEX_WEBUI_PROJECT_ROOT ?? "").trim();
+check("CODEX_WEBUI_PROJECT_ROOT configured", Boolean(projectRoot), "set the deployed application root, normally /opt/az-codex");
+if (projectRoot) {
+  check(`project root exists: ${projectRoot}`, fs.existsSync(projectRoot), "deploy the repository before starting");
+  check(
+    `project package.json: ${projectRoot}`,
+    fs.existsSync(`${projectRoot.replace(/\/+$/u, "")}/package.json`),
+    "production checks require package.json at CODEX_WEBUI_PROJECT_ROOT"
+  );
+}
+
 const dataDir = String(process.env.CODEX_WEBUI_DATA_DIR ?? "").trim();
 check("CODEX_WEBUI_DATA_DIR configured", Boolean(dataDir), "set a persistent data directory");
 if (dataDir) {
