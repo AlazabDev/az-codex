@@ -38,11 +38,8 @@ printf '\n== Production environment / Foundry ==\n'
 sudo -u "$RUN_AS" -H bash -lc "
   set -Eeuo pipefail
   cd '$APP_DIR'
-  set -a
-  source '$ENV_FILE'
-  set +a
-  pnpm foundry:doctor
-  pnpm prod:doctor
+  node --env-file='$ENV_FILE' ./bin/azcodex.mjs doctor
+  node --env-file='$ENV_FILE' ./scripts/production-doctor.mjs
 "
 
 printf '\n== Preflight passed ==\n'
