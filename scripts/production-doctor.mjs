@@ -40,9 +40,6 @@ check("CODEX_WEBUI_PASSWORD_HASH", passwordHash.startsWith("scrypt$"), "generate
 check("CODEX_WEBUI_OWNER_PASSWORD_HASH", ownerHash.startsWith("scrypt$"), "generate with `pnpm hash-password`");
 check("CODEX_WEBUI_SESSION_SECRET", sessionSecret.length >= 32, "generate a high-entropy secret");
 
-const hcaptchaSite = String(process.env.CODEX_WEBUI_HCAPTCHA_SITE_KEY ?? "").trim();
-const hcaptchaSecret = String(process.env.CODEX_WEBUI_HCAPTCHA_SECRET_KEY ?? "").trim();
-check("hCaptcha enabled", Boolean(hcaptchaSite) && Boolean(hcaptchaSecret), "production requires both hCaptcha values");
 
 const allowedRoots = String(process.env.CODEX_WEBUI_ALLOWED_ROOTS ?? "")
   .split(process.platform === "win32" ? ";" : ":")
