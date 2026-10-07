@@ -2,6 +2,7 @@
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 
 import { inspectRegistry } from "./mcp-registry-lib.mjs";
 
@@ -41,7 +42,7 @@ check("CODEX_WEBUI_SESSION_SECRET", sessionSecret.length >= 32, "generate a high
 
 const hcaptchaSite = String(process.env.CODEX_WEBUI_HCAPTCHA_SITE_KEY ?? "").trim();
 const hcaptchaSecret = String(process.env.CODEX_WEBUI_HCAPTCHA_SECRET_KEY ?? "").trim();
-check("hCaptcha pair", Boolean(hcaptchaSite) === Boolean(hcaptchaSecret), "set both hCaptcha values or neither");
+check("hCaptcha enabled", Boolean(hcaptchaSite) && Boolean(hcaptchaSecret), "production requires both hCaptcha values");
 
 const allowedRoots = String(process.env.CODEX_WEBUI_ALLOWED_ROOTS ?? "")
   .split(process.platform === "win32" ? ";" : ":")
@@ -73,8 +74,43 @@ try {
 
 const foundryEndpoint = String(process.env.AZURE_FOUNDRY_ENDPOINT ?? "").trim();
 const foundryKey = String(process.env.AZURE_FOUNDRY_API_KEY ?? "").trim();
-if (foundryEndpoint || foundryKey) {
-  check("Foundry endpoint/key pair", Boolean(foundryEndpoint) && Boolean(foundryKey), "set both endpoint and API key");
+const foundryModel = String(process.env.AZURE_FOUNDRY_MODEL ?? "").trim();
+const azcodexHome = String(process.env.AZCODEX_HOME ?? "").trim();
+check("Foundry endpoint", Boolean(foundryEndpoint), "set AZURE_FOUNDRY_ENDPOINT");
+check("Foundry API key", Boolean(foundryKey), "set AZURE_FOUNDRY_API_KEY");
+check("Foundry deployment", Boolean(foundryModel), "set AZURE_FOUNDRY_MODEL to the exact Azure deployment name");
+check("AZCODEX_HOME", Boolean(azcodexHome), "set AZCODEX_HOME, normally /home/frappe/.azcodex");
+
+const defaultProfile = String(process.env.CODEX_WEBUI_DEFAULT_PROFILE_ID ?? "").trim();
+check("default WebUI profile is azcodex", defaultProfile === "azcodex", "set CODEX_WEBUI_DEFAULT_PROFILE_ID=azcodex");
+
+const profilesRaw = String(process.env.CODEX_WEBUI_PROFILES_JSON ?? "").trim();
+try {
+  const profiles = JSON.parse(profilesRaw);
+  const codex = Array.isArray(profiles) ? profiles.find((profile) => profile?.id === "codex") : null;
+  const azcodex = Array.isArray(profiles) ? profiles.find((profile) => profile?.id === "azcodex") : null;
+  check("WebUI codex profile", Boolean(codex?.codexHome), "register the OpenAI codex profile");
+  check("WebUI azcodex profile", Boolean(azcodex?.codexHome), "register the Foundry azcodex profile");
+  if (azcodexHome && azcodex?.codexHome) {
+    check("azcodex profile CODEX_HOME", azcodex.codexHome === azcodexHome, "profile codexHome must match AZCODEX_HOME");
+  }
+} catch (error) {
+  check("CODEX_WEBUI_PROFILES_JSON", false, `invalid JSON: ${error.message}`);
+}
+
+if (ok) {
+  const azcodexBin = fileURLToPath(new URL("../bin/azcodex.mjs", import.meta.url));
+  const probe = spawnSync(process.execPath, [azcodexBin, "doctor"], {
+    encoding: "utf8",
+    timeout: 120_000,
+    env: process.env
+  });
+  const output = `${probe.stdout ?? ""}${probe.stderr ?? ""}`.trim();
+  check(
+    "live Foundry runtime",
+    probe.status === 0,
+    probe.error?.code === "ETIMEDOUT" ? "azcodex doctor timed out" : output.split(/\r?\n/u).slice(-8).join(" | ")
+  );
 }
 
 if (!ok) {
