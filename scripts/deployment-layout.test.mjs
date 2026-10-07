@@ -7,7 +7,7 @@ const read = (relative) => fs.readFile(new URL(`../${relative}`, import.meta.url
 test("deployment helpers use pnpm and fixed production paths", async () => {
   const deploy = await read("deploy/scripts/deploy.sh");
   const preflight = await read("deploy/scripts/preflight.sh");
-  const env = await read("deploy/production.env.example");
+  const service = await read("deploy/systemd/az-codex.service");
 
   assert.match(deploy, /pnpm install --frozen-lockfile/u);
   assert.match(deploy, /pnpm release:check/u);
@@ -19,8 +19,11 @@ test("deployment helpers use pnpm and fixed production paths", async () => {
   assert.match(preflight, /pnpm foundry:doctor/u);
   assert.match(preflight, /pnpm prod:doctor/u);
 
-  assert.match(env, /^CODEX_WEBUI_PROJECT_ROOT=\/opt\/az-codex$/mu);
-  assert.match(env, /^CODEX_WEBUI_DEFAULT_PROFILE_ID=azcodex$/mu);
+  assert.match(deploy, /APP_DIR="\$\{APP_DIR:-\/home\/frappe\/az-codex\}"/u);
+  assert.match(deploy, /ENV_FILE="\$\{ENV_FILE:-\/home\/frappe\/az-codex\/\.env\}"/u);
+  assert.match(deploy, /node --env-file='\$ENV_FILE'/u);
+  assert.match(service, /WorkingDirectory=\/home\/frappe\/az-codex/u);
+  assert.match(service, /--env-file=\/home\/frappe\/az-codex\/\.env/u);
 });
 
 test("first TLS bootstrap never exposes the app over plaintext HTTP", async () => {
