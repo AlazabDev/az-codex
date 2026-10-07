@@ -114,21 +114,22 @@
     busy = true;
     errorText = "";
     try {
-      const [nextConfig, nextRuntime, nextMcp] = await Promise.all([
-        api.getConfig(),
-        api.getRuntimeStatus(),
-        api.listMcpServers()
-      ]);
-      config = nextConfig;
-      runtime = nextRuntime;
-      mcpServers = nextMcp.data;
+      runtime = await api.getRuntimeStatus();
       if (canAdmin) {
+        const [nextConfig, nextMcp] = await Promise.all([
+          api.getConfig(),
+          api.listMcpServers()
+        ]);
+        config = nextConfig;
+        mcpServers = nextMcp.data;
         try {
           processes = (await api.getRuntimeProcesses()).processes;
         } catch {
           processes = [];
         }
       } else {
+        config = null;
+        mcpServers = [];
         processes = [];
       }
     } catch (error) {
