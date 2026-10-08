@@ -4,9 +4,10 @@ import { get, writable } from "svelte/store";
 import { getLocale, getTextDirection, setLocale, type Locale } from "$lib/paraglide/runtime.js";
 
 export const localeSignal = writable(0);
-export const activeLocale = writable<Locale>("en");
+export const activeLocale = writable<Locale>("ar");
 
 export const localeOptions = [
+  { value: "ar", label: "العربية" },
   { value: "en", label: "English" },
   { value: "ko", label: "한국어" },
   { value: "zh-Hans", label: "简体中文" },
