@@ -10519,6 +10519,26 @@
     }
   }
 
+  async function selectComposerAgentProfile(profileId: string) {
+    const targetProfileId = profileId.trim();
+    if (!targetProfileId || targetProfileId === activeProfileId) {
+      return;
+    }
+
+    const draftSnapshot = draft;
+    await selectAccountProfile(targetProfileId);
+    if (activeProfileId !== targetProfileId || !config) {
+      return;
+    }
+
+    activateDraftSession(config.defaults);
+    draft = draftSnapshot;
+    await tick();
+    scheduleComposerTextareaResize();
+    composerSettingsAnchor = "session";
+    composerSettingsTab = "session";
+    composerSettingsOpen = true;
+  }
   async function renameAccountProfile(profileId: string, currentLabel: string) {
     if (readOnlyRole) {
       errorText = m.error_forbidden_role();
@@ -15805,11 +15825,33 @@
                       <div class="grid grid-cols-1 gap-3" role="tabpanel">
                         <div class="space-y-1">
                           <label class="px-1 text-[10px] font-bold uppercase tracking-widest text-gray-400" for="composer-model-select">{ui.model}</label>
-                          <select class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-all focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/10 disabled:cursor-not-allowed disabled:opacity-60" disabled={readOnlyRole} id="composer-model-select" onchange={(event) => setPreference("model", (event.currentTarget as HTMLSelectElement).value || null)} value={conversation.preferences.model ?? ""}>
-                            <option value="">{ui.autoDefault}</option>
-                            {#each config?.models ?? [] as model (model.id)}
-                              <option value={model.id}>{model.displayName}</option>
-                            {/each}
+                          <select
+                            class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-all focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+                            disabled={readOnlyRole}
+                            id="composer-model-select"
+                            onchange={(event) => {
+                              const value = (event.currentTarget as HTMLSelectElement).value;
+                              if (value.startsWith("__profile__:")) {
+                                void selectComposerAgentProfile(value.slice("__profile__:".length));
+                                return;
+                              }
+                              setPreference("model", value || null);
+                            }}
+                            value={conversation.preferences.model ?? ""}
+                          >
+                            <optgroup label={$activeLocale === "ar" ? "الوكيل" : "Agent"}>
+                              {#each config?.profiles ?? [] as profile (profile.id)}
+                                <option value={"__profile__:" + profile.id}>
+                                  {profile.id === activeProfileId ? `✓ ${profile.label}` : profile.label}
+                                </option>
+                              {/each}
+                            </optgroup>
+                            <optgroup label={$activeLocale === "ar" ? "النموذج" : "Model"}>
+                              <option value="">{ui.autoDefault}</option>
+                              {#each config?.models ?? [] as model (model.id)}
+                                <option value={model.id}>{model.displayName}</option>
+                              {/each}
+                            </optgroup>
                           </select>
                         </div>
                         <div class="space-y-1">
