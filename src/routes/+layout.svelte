@@ -48,7 +48,7 @@
   <meta name="apple-mobile-web-app-title" content={i18n.appTitle} />
   <link rel="manifest" href={`${base}/manifest.webmanifest`} />
   <link rel="apple-touch-icon" href={`${base}/apple-touch-icon.png`} />
-  <link rel="icon" href={`${base}/icon-192.png`} />
+  <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
   <script>
     {`
       (() => {
