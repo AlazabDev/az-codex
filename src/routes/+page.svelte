@@ -10505,6 +10505,14 @@
         return;
       }
       config = applyLocalComposerPreferencesToConfig(nextConfig);
+      // Switching accounts must also leave the old profile's conversation.
+      // Otherwise the next message may still run in its original OpenAI session.
+      const pendingDraftText = draft;
+      const pendingDraftAttachments = [...draftAttachments];
+      activateDraftSession(config.defaults, {
+        draftText: pendingDraftText,
+        draftAttachments: pendingDraftAttachments
+      });
       syncConfiguredTheme(config);
       syncStartupAlertModal(config);
       void refreshRuntimeStatus(true, { silent: true });
@@ -10531,7 +10539,8 @@
       return;
     }
 
-    activateDraftSession(config.defaults);
+    // selectAccountProfile already opened a draft scoped to the new profile.
+    // Restore the composer text captured before asynchronous profile selection.
     draft = draftSnapshot;
     await tick();
     scheduleComposerTextareaResize();
