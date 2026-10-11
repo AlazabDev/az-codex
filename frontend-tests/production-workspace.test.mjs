@@ -47,3 +47,19 @@ test("backend production runner is fixed, bounded and owner-only", async () => {
   assert.match(permissions, /\| "production\/check"/u);
   assert.match(dispatch, /"production\/check" => run_production_check_payload/u);
 });
+
+test("switching accounts opens a new draft so messages cannot use the previous profile session", async () => {
+  const page = await read("src/routes/+page.svelte");
+  const switchHandler = page.slice(
+    page.indexOf("async function selectAccountProfile(profileId: string)"),
+    page.indexOf("async function selectComposerAgentProfile(profileId: string)")
+  );
+  assert.match(switchHandler, /api\.selectAuthProfile\(profileId\)/u);
+  assert.match(switchHandler, /activeProfileId = response\.activeProfileId/u);
+  assert.match(switchHandler, /activateDraftSession\(config\.defaults,\s*\{/u);
+  assert.match(switchHandler, /draftText: pendingDraftText/u);
+  assert.match(switchHandler, /draftAttachments: pendingDraftAttachments/u);
+
+  const api = await read("src/lib/api.ts");
+  assert.match(api, /ws\.setDefaultProfileId\(response\.activeProfileId\)/u);
+});
