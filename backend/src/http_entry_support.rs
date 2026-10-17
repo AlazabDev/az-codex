@@ -38,7 +38,8 @@ async fn handle_http_inner(
                         | "/api/account/login"
                         | "/api/account/login/cancel"
                         | "/api/account/logout"
-                        | "/api/config" | "/api/ollama"
+                        | "/api/config"
+                        | "/api/ollama"
                         | "/api/directories"
                         | "/api/editor"
                         | "/api/editor/download"
@@ -422,7 +423,8 @@ codex_webui_host_oom_kill_count {host_oom_kill_count}\n",
 
             if matches!(
                 route_path.as_str(),
-                "/api/config" | "/api/ollama"
+                "/api/config"
+                    | "/api/ollama"
                     | "/api/directories"
                     | "/api/editor"
                     | "/api/editor/download"
