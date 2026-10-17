@@ -39,6 +39,7 @@ async fn handle_http_inner(
                         | "/api/account/login/cancel"
                         | "/api/account/logout"
                         | "/api/config"
+                        | "/api/ollama"
                         | "/api/directories"
                         | "/api/editor"
                         | "/api/editor/download"
@@ -423,6 +424,7 @@ codex_webui_host_oom_kill_count {host_oom_kill_count}\n",
             if matches!(
                 route_path.as_str(),
                 "/api/config"
+                    | "/api/ollama"
                     | "/api/directories"
                     | "/api/editor"
                     | "/api/editor/download"
@@ -459,6 +461,7 @@ codex_webui_host_oom_kill_count {host_oom_kill_count}\n",
 
                 let mut response = match route_path.as_str() {
                     "/api/config" => handle_config_api_http(state, request, auth).await,
+                    "/api/ollama" => handle_ollama_http(state, request, auth).await,
                     "/api/directories" => handle_directories_api_http(state, request).await,
                     "/api/editor" => handle_editor_api_http(state, request, auth).await,
                     "/api/editor/download" => {

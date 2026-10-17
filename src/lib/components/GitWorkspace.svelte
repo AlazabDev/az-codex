@@ -197,18 +197,18 @@
       pullRequestFiles: m.pull_request_files(),
       pullRequestBodyEmpty: m.pull_request_body_empty(),
       pullRequestFilesTruncated:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_44() : locale === "ko"
           ? "GitHub API 페이지 제한으로 일부 파일만 표시됩니다."
-          : "Only part of this file list is shown because the GitHub API page cap was reached.",
-      sourceControl: locale === "ko" ? "소스 제어" : "Source Control",
-      stagedChanges: locale === "ko" ? "스테이징된 변경 사항" : "Staged Changes",
-      workingChanges: locale === "ko" ? "변경 사항" : "Changes",
-      treeView: locale === "ko" ? "트리" : "Tree",
-      listView: locale === "ko" ? "목록" : "List",
-      viewAs: locale === "ko" ? "보기" : "View",
-      noStagedChanges: locale === "ko" ? "스테이징된 변경 사항이 없습니다." : "No staged changes.",
-      noWorkingChanges: locale === "ko" ? "작업 트리 변경 사항이 없습니다." : "No working tree changes.",
-      fileTree: locale === "ko" ? "파일 트리" : "File tree"
+          : "Only part of this file list is shown because the GitHub API page cap was reached."),
+      sourceControl: (getLocale() === "ar" ? m.interaction_45() : locale === "ko" ? "소스 제어" : "Source Control"),
+      stagedChanges: (getLocale() === "ar" ? m.interaction_46() : locale === "ko" ? "스테이징된 변경 사항" : "Staged Changes"),
+      workingChanges: (getLocale() === "ar" ? m.interaction_47() : locale === "ko" ? "변경 사항" : "Changes"),
+      treeView: (getLocale() === "ar" ? m.interaction_48() : locale === "ko" ? "트리" : "Tree"),
+      listView: (getLocale() === "ar" ? m.interaction_49() : locale === "ko" ? "목록" : "List"),
+      viewAs: (getLocale() === "ar" ? m.interaction_50() : locale === "ko" ? "보기" : "View"),
+      noStagedChanges: (getLocale() === "ar" ? m.interaction_51() : locale === "ko" ? "스테이징된 변경 사항이 없습니다." : "No staged changes."),
+      noWorkingChanges: (getLocale() === "ar" ? m.interaction_52() : locale === "ko" ? "작업 트리 변경 사항이 없습니다." : "No working tree changes."),
+      fileTree: (getLocale() === "ar" ? m.interaction_53() : locale === "ko" ? "파일 트리" : "File tree")
     };
   });
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { m } from "$lib/paraglide/messages.js";
   import {
     Activity,
     AlertTriangle,
@@ -89,27 +90,27 @@
   const commands: Array<{ id: ProductionCheckId; label: string; command: string; description: string }> = [
     {
       id: "release",
-      label: "Release gate",
+      label: m.operations_1(),
       command: "pnpm release:check",
-      description: "Full TypeScript, Rust, security, runtime smoke and package verification."
+      description: m.operations_2()
     },
     {
       id: "foundry",
-      label: "Foundry live",
+      label: m.operations_3(),
       command: "pnpm foundry:doctor",
-      description: "Live Codex → Microsoft Foundry round-trip."
+      description: "اختبار طلب ورد مباشر بين Codex وMicrosoft Foundry."
     },
     {
       id: "production",
-      label: "Production doctor",
+      label: m.operations_5(),
       command: "pnpm prod:doctor",
-      description: "Production environment, profiles, runtime and Foundry validation."
+      description: m.operations_6()
     },
     {
       id: "mcp",
-      label: "MCP doctor",
+      label: m.operations_7(),
       command: "pnpm mcp:doctor",
-      description: "Validate enabled integration targets from the MCP registry."
+      description: m.operations_8()
     }
   ];
 
@@ -155,7 +156,7 @@
     try {
       await api.refreshMcpServers();
       mcpServers = (await api.listMcpServers()).data;
-      noticeText = "MCP servers refreshed.";
+      noticeText = m.operations_9();
     } catch (error) {
       errorText = error instanceof Error ? error.message : String(error);
     } finally {
@@ -170,7 +171,7 @@
     noticeText = "";
     try {
       runtime = await api.checkRuntimeUpdate();
-      noticeText = runtime.updateAvailable ? "Codex update available." : "Codex runtime is current.";
+      noticeText = runtime.updateAvailable ? m.operations_10() : m.operations_11();
     } catch (error) {
       errorText = error instanceof Error ? error.message : String(error);
     } finally {
@@ -180,7 +181,7 @@
 
   async function restartGateway() {
     if (!canRestart || actionBusy) return;
-    if (!window.confirm("Restart the production gateway now? Active sessions use handoff when available.")) return;
+    if (!window.confirm(m.operations_12())) return;
     actionBusy = "restart";
     errorText = "";
     noticeText = "";
@@ -203,8 +204,8 @@
       const result = await api.runProductionCheck(check);
       checkResults = { ...checkResults, [check]: result };
       noticeText = result.ok
-        ? `${result.script} passed in ${Math.max(1, Math.round(result.durationMs / 1000))}s.`
-        : `${result.script} failed with exit code ${result.exitCode ?? "unknown"}.`;
+        ? `${result.script} نجح خلال ${Math.max(1, Math.round(result.durationMs / 1000))} ثانية.`
+        : `${result.script} فشل برمز خروج ${result.exitCode ?? "غير معروف"}.`;
     } catch (error) {
       errorText = error instanceof Error ? error.message : String(error);
     } finally {
@@ -240,13 +241,13 @@
 <div class="production-workspace">
   <header class="production-hero">
     <div class="production-hero__copy">
-      <span class="production-kicker"><ShieldCheck size={14} /> Production control</span>
-      <h2>Production / الإنتاج</h2>
-      <p>Runtime health, Foundry profile, MCP integrations and safe operational shortcuts in one place.</p>
+      <span class="production-kicker"><ShieldCheck size={14} /> {m.surface_118()}</span>
+      <h2>{m.surface_119()}</h2>
+      <p>{m.surface_120()}</p>
     </div>
     <button class="production-button production-button--primary" disabled={busy} onclick={() => void refreshAll()} type="button">
       <RefreshCw size={15} class={busy ? "animate-spin" : ""} />
-      Refresh
+      {m.surface_3()}
     </button>
   </header>
 
@@ -266,23 +267,23 @@
   <section class="production-metrics">
     <article class="metric-card">
       <div class="metric-icon"><Activity size={17} /></div>
-      <div><span>Codex runtime</span><strong>{runtime?.version ?? (runtime?.installed ? "installed" : "unavailable")}</strong></div>
+      <div><span>{m.surface_121()}</span><strong>{runtime?.version ?? (runtime?.installed ? m.operations_14() : m.operations_15())}</strong></div>
       <span class:metric-ok={runtime?.installed} class:metric-warn={!runtime?.installed} class="metric-state">
-        {runtime?.installed ? "healthy" : "check"}
+        {runtime?.installed ? m.operations_16() : m.operations_17()}
       </span>
     </article>
 
     <article class="metric-card">
       <div class="metric-icon"><Server size={17} /></div>
-      <div><span>Gateway build</span><strong>{runtime?.webuiBuildCommitShort ?? runtime?.webuiBuildVersion ?? "-"}</strong></div>
+      <div><span>{m.surface_122()}</span><strong>{runtime?.webuiBuildCommitShort ?? runtime?.webuiBuildVersion ?? "-"}</strong></div>
       <span class:metric-ok={!runtime?.webuiBuildDirty} class:metric-warn={runtime?.webuiBuildDirty} class="metric-state">
-        {runtime?.webuiBuildDirty ? "dirty" : "clean"}
+        {runtime?.webuiBuildDirty ? m.operations_18() : m.operations_19()}
       </span>
     </article>
 
     <article class="metric-card">
       <div class="metric-icon"><PlugZap size={17} /></div>
-      <div><span>MCP servers</span><strong>{healthyMcpCount} / {mcpServers.length}</strong></div>
+      <div><span>{m.surface_57()}</span><strong>{healthyMcpCount} / {mcpServers.length}</strong></div>
       <span class:metric-ok={mcpServers.length > 0 && healthyMcpCount === mcpServers.length} class:metric-warn={healthyMcpCount !== mcpServers.length} class="metric-state">
         {mcpServers.length > 0 && healthyMcpCount === mcpServers.length ? "ready" : "review"}
       </span>
@@ -290,19 +291,19 @@
 
     <article class="metric-card">
       <div class="metric-icon"><Wrench size={17} /></div>
-      <div><span>App-server sessions</span><strong>{totalSessions}</strong></div>
+      <div><span>{m.surface_123()}</span><strong>{totalSessions}</strong></div>
       <span class="metric-state">{processes.length} proc</span>
     </article>
   </section>
 
   <section class="production-grid">
     <article class="production-card">
-      <header><div><span>Runtime</span><h3>Host & gateway</h3></div><Activity size={18} /></header>
+      <header><div><span>{m.surface_4()}</span><h3>{m.surface_124()}</h3></div><Activity size={18} /></header>
       <dl>
-        <div><dt>Memory</dt><dd>{memoryPercent === null ? "-" : `${memoryPercent}%`}</dd></div>
-        <div><dt>Used</dt><dd>{formatBytes(runtime?.hostResources?.memoryCurrentBytes)}</dd></div>
-        <div><dt>OOM kills</dt><dd>{runtime?.hostResources?.oomKillCount ?? 0}</dd></div>
-        <div><dt>Update</dt><dd>{runtime?.updateAvailable === true ? "available" : runtime?.updateAvailable === false ? "current" : "unknown"}</dd></div>
+        <div><dt>{m.surface_78()}</dt><dd>{memoryPercent === null ? "-" : `${memoryPercent}%`}</dd></div>
+        <div><dt>{m.surface_125()}</dt><dd>{formatBytes(runtime?.hostResources?.memoryCurrentBytes)}</dd></div>
+        <div><dt>{m.surface_25()}</dt><dd>{runtime?.hostResources?.oomKillCount ?? 0}</dd></div>
+        <div><dt>{m.surface_126()}</dt><dd>{runtime?.updateAvailable === true ? m.operations_20() : runtime?.updateAvailable === false ? m.operations_21() : m.operations_22()}</dd></div>
       </dl>
       {#if runtime?.issues?.length}
         <div class="issue-list">
@@ -311,21 +312,21 @@
       {/if}
       <div class="card-actions">
         <button class="production-button" disabled={!canAdmin || Boolean(actionBusy)} onclick={() => void checkUpdate()} type="button">
-          <RefreshCw size={14} class={actionBusy === "update" ? "animate-spin" : ""} /> Check update
+          <RefreshCw size={14} class={actionBusy === "update" ? "animate-spin" : ""} /> {m.surface_127()}
         </button>
         <button class="production-button production-button--danger" disabled={!canRestart || Boolean(actionBusy)} onclick={() => void restartGateway()} type="button">
-          <RotateCw size={14} class={actionBusy === "restart" ? "animate-spin" : ""} /> Restart gateway
+          <RotateCw size={14} class={actionBusy === "restart" ? "animate-spin" : ""} /> {m.surface_128()}
         </button>
       </div>
     </article>
 
     <article class="production-card">
-      <header><div><span>Profiles</span><h3>Codex routing</h3></div><ShieldCheck size={18} /></header>
+      <header><div><span>{m.surface_129()}</span><h3>{m.surface_130()}</h3></div><ShieldCheck size={18} /></header>
       <dl>
-        <div><dt>Active</dt><dd>{activeProfile?.label ?? activeProfileId ?? "-"}</dd></div>
+        <div><dt>{m.surface_131()}</dt><dd>{activeProfile?.label ?? activeProfileId ?? "-"}</dd></div>
         <div><dt>CODEX_HOME</dt><dd title={activeProfile?.codexHome ?? ""}>{activeProfile?.codexHome ?? "-"}</dd></div>
-        <div><dt>Foundry</dt><dd>{foundryProfile ? "configured" : "missing"}</dd></div>
-        <div><dt>Allowed roots</dt><dd>{config?.allowedRoots.length ?? 0}</dd></div>
+        <div><dt>Foundry</dt><dd>{foundryProfile ? m.operations_23() : m.operations_24()}</dd></div>
+        <div><dt>{m.surface_132()}</dt><dd>{config?.allowedRoots.length ?? 0}</dd></div>
       </dl>
       <div class="profile-list">
         {#each config?.profiles ?? [] as profile (profile.id)}
@@ -338,9 +339,9 @@
     </article>
 
     <article class="production-card">
-      <header><div><span>Integrations</span><h3>MCP status</h3></div><PlugZap size={18} /></header>
+      <header><div><span>{m.surface_133()}</span><h3>{m.surface_134()}</h3></div><PlugZap size={18} /></header>
       {#if mcpServers.length === 0}
-        <div class="empty-state">No MCP servers reported by Codex.</div>
+        <div class="empty-state">{m.surface_135()}</div>
       {:else}
         <div class="mcp-list">
           {#each mcpServers as server (server.name)}
@@ -354,14 +355,14 @@
       {/if}
       <div class="card-actions">
         <button class="production-button" disabled={!canAdmin || Boolean(actionBusy)} onclick={() => void refreshMcp()} type="button">
-          <RefreshCw size={14} class={actionBusy === "mcp" ? "animate-spin" : ""} /> Refresh MCP
+          <RefreshCw size={14} class={actionBusy === "mcp" ? "animate-spin" : ""} /> {m.surface_136()}
         </button>
-        <button class="production-button" onclick={() => onOpenSettings?.()} type="button"><Settings size={14} /> MCP settings</button>
+        <button class="production-button" onclick={() => onOpenSettings?.()} type="button"><Settings size={14} /> {m.surface_137()}</button>
       </div>
     </article>
 
     <article class="production-card production-card--commands">
-      <header><div><span>Release tools</span><h3>Verified commands</h3></div><Terminal size={18} /></header>
+      <header><div><span>{m.surface_138()}</span><h3>{m.surface_139()}</h3></div><Terminal size={18} /></header>
       <div class="command-list">
         {#each commands as item (item.command)}
           {@const result = checkResults[item.id]}
@@ -372,7 +373,7 @@
               <code>{item.command}</code>
             </div>
             <div class="command-actions">
-              <button class="icon-action" onclick={() => void copyCommand(item.command)} title="Copy command" type="button">
+              <button class="icon-action" onclick={() => void copyCommand(item.command)} title={m.surface_146()} type="button">
                 <Copy size={14} />
               </button>
               <button
@@ -385,11 +386,11 @@
                 Run
               </button>
             </div>
-            {#if copiedCommand === item.command}<span class="copied">copied</span>{/if}
+            {#if copiedCommand === item.command}<span class=m.surface_140()>{m.surface_140()}</span>{/if}
             {#if result}
               <div class={`command-result ${result.ok ? "command-result--ok" : "command-result--error"}`}>
                 <header>
-                  <strong>{result.ok ? "PASS" : "FAIL"}</strong>
+                  <strong>{result.ok ? m.surface_148() : m.surface_149()}</strong>
                   <span>{result.durationMs} ms · exit {result.exitCode ?? "-"}</span>
                 </header>
                 {#if result.stdout}<pre>{result.stdout}</pre>{/if}
@@ -403,10 +404,10 @@
   </section>
 
   <section class="production-toolbar">
-    <button class="tool-card" onclick={() => onOpenGit?.()} type="button"><GitBranch size={17} /><span><strong>Git</strong><small>Review source and deployment diff</small></span></button>
-    <button class="tool-card" onclick={() => void onCreateTerminal?.()} disabled={!canAdmin} type="button"><Terminal size={17} /><span><strong>Terminal</strong><small>Run guarded production commands</small></span></button>
-    <button class="tool-card" onclick={() => onOpenDiagnostics?.()} type="button"><Activity size={17} /><span><strong>Diagnostics</strong><small>Processes, parser and runtime events</small></span></button>
-    <button class="tool-card" onclick={onOpenSettings} type="button"><Settings size={17} /><span><strong>Settings</strong><small>Profiles, MCP, skills and automation</small></span></button>
+    <button class="tool-card" onclick={() => onOpenGit?.()} type="button"><GitBranch size={17} /><span><strong>Git</strong><small>{m.surface_141()}</small></span></button>
+    <button class="tool-card" onclick={() => void onCreateTerminal?.()} disabled={!canAdmin} type="button"><Terminal size={17} /><span><strong>{m.surface_142()}</strong><small>{m.surface_143()}</small></span></button>
+    <button class="tool-card" onclick={() => onOpenDiagnostics?.()} type="button"><Activity size={17} /><span><strong>{m.surface_1()}</strong><small>{m.surface_144()}</small></span></button>
+    <button class="tool-card" onclick={onOpenSettings} type="button"><Settings size={17} /><span><strong>{m.surface_84()}</strong><small>{m.surface_145()}</small></span></button>
   </section>
 </div>
 

@@ -35,6 +35,9 @@
   const copy = $derived.by(() => {
     const _locale = $localeSignal;
     const locale = getLocale();
+    if (locale === "ar") {
+      return { title: "مقارنة النماذج", subtitle: "أرسل الطلب نفسه إلى نماذج متعددة وقارن الإجابات النهائية.", prompt: "طلب المقارنة", chooseModels: "النماذج المراد مقارنتها", run: "بدء المقارنة", refresh: "تحديث", loading: "جارٍ تحميل المقارنات…", empty: "لم تبدأ أي مقارنة بعد.", needPrompt: "أدخل طلبًا واختر نموذجين على الأقل.", running: "قيد التنفيذ", completed: "مكتمل", useResponse: "استخدام الإجابة", openThread: "فتح المحادثة", noResponse: "لم تصل إجابة نهائية بعد.", contestants: "النماذج المشاركة" };
+    }
     if (locale === "ko") {
       return {
         title: "Best-of-N Arena",

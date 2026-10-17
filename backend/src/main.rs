@@ -81,6 +81,7 @@ mod http_entry_support;
 mod http_router_support;
 mod memory_support;
 mod notification_state_support;
+mod ollama_support;
 mod parser_diagnostics_support;
 mod production_support;
 mod queue_runtime_support;
@@ -148,6 +149,7 @@ use http_entry_support::*;
 use http_router_support::*;
 use memory_support::*;
 use notification_state_support::*;
+use ollama_support::*;
 use parser_diagnostics_support::*;
 use production_support::*;
 use queue_runtime_support::*;
@@ -297,6 +299,7 @@ async fn run_gateway(config: Arc<Config>) -> Result<()> {
             config: config.clone(),
             app_servers: AppServerManager::new(AppServerClientConfig {
                 codex_bin: config.codex_bin.clone(),
+                extra_env: ollama_runtime_env(),
                 stderr_log_path: Some(runtime_logs_dir(&config).join("codex-app-server.log")),
                 handoff_dir: config
                     .app_server_handoff_enabled
