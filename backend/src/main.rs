@@ -69,6 +69,7 @@ mod catalog_support;
 mod codex_protocol_proxy_support;
 mod codex_runtime_support;
 mod config_http_support;
+mod ollama_support;
 mod config_support;
 mod constants_support;
 mod event_mapping_support;
@@ -136,6 +137,7 @@ use catalog_support::*;
 use codex_protocol_proxy_support::*;
 use codex_runtime_support::*;
 use config_http_support::*;
+use ollama_support::*;
 use config_support::*;
 use constants_support::*;
 use event_mapping_support::*;
@@ -297,6 +299,7 @@ async fn run_gateway(config: Arc<Config>) -> Result<()> {
             config: config.clone(),
             app_servers: AppServerManager::new(AppServerClientConfig {
                 codex_bin: config.codex_bin.clone(),
+                extra_env: ollama_runtime_env(),
                 stderr_log_path: Some(runtime_logs_dir(&config).join("codex-app-server.log")),
                 handoff_dir: config
                     .app_server_handoff_enabled

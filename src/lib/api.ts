@@ -494,6 +494,16 @@ export const api = {
     return ws.request<ComputerInputPayload>("computer/input", { sessionId, input, profileId });
   },
 
+  ollamaCatalog() {
+    return request<{ endpoint: string; home: string; models: Array<{ name: string; size: number }> }>(apiPath("/ollama"));
+  },
+
+  ollamaAction(action: "probe" | "setup", model: string) {
+    return request<{ ok: boolean; message: string }>(apiPath("/ollama"), {
+      method: action === "setup" ? "PUT" : "POST", body: JSON.stringify({ model })
+    });
+  },
+
   getEditableFile(filePath: string) {
     return ws.request<EditableFilePayload>("editor/file/get", { filePath });
   },

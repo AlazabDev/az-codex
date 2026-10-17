@@ -4,6 +4,7 @@
   import { fade } from "svelte/transition";
 
   import { api } from "$lib/api";
+  import OllamaSettings from "$lib/components/OllamaSettings.svelte";
   import MonacoTextEditor from "$lib/components/MonacoTextEditor.svelte";
   import { localeSignal } from "$lib/i18n";
   import { m } from "$lib/paraglide/messages.js";
@@ -270,33 +271,29 @@
       webuiCommit: m.webui_commit(),
       webuiBuiltAt: m.webui_built_at(),
       webuiDirtyBuild: m.webui_dirty_build(),
-      runtimeProcesses: isKorean ? "Codex 프로세스" : "Codex processes",
-      runtimeProcessesDescription: isKorean
-        ? "현재 WebUI가 관리 중인 Codex app-server 프로세스와 연결된 세션입니다."
-        : "Codex app-server processes currently managed by this WebUI and their attached sessions.",
-      runningProcesses: isKorean ? "실행 중" : "Running",
-      noRuntimeProcesses: isKorean ? "현재 관리 중인 Codex 프로세스가 없습니다." : "No managed Codex processes are running.",
-      forceKill: isKorean ? "강제 종료" : "Force kill",
-      forceKillConfirm: isKorean
-        ? "이 Codex 프로세스를 강제 종료할까요? 연결된 실행 중 세션은 실패 상태로 정리됩니다."
-        : "Force kill this Codex process? Attached running sessions will be marked as failed.",
-      processKindStdio: isKorean ? "stdio" : "stdio",
-      processKindHandoffProxy: isKorean ? "핸드오프 프록시" : "handoff proxy",
-      processKindHandoffDaemon: isKorean ? "핸드오프 서버" : "handoff server",
+      runtimeProcesses: m.workspace_7(),
+      runtimeProcessesDescription: m.workspace_31(),
+      runningProcesses: m.workspace_32(),
+      noRuntimeProcesses: m.workspace_8(),
+      forceKill: m.workspace_33(),
+      forceKillConfirm: m.workspace_34(),
+      processKindStdio: m.workspace_35(),
+      processKindHandoffProxy: m.workspace_36(),
+      processKindHandoffDaemon: m.workspace_37(),
       pid: "PID",
-      profile: isKorean ? "프로필" : "Profile",
-      sessions: isKorean ? "세션" : "Sessions",
-      pendingRequests: isKorean ? "대기 요청" : "Pending requests",
-      noAttachedSessions: isKorean ? "연결된 실행 중 세션이 없습니다." : "No attached running sessions.",
-      openSession: isKorean ? "세션 열기" : "Open session",
+      profile: m.workspace_38(),
+      sessions: m.workspace_39(),
+      pendingRequests: m.workspace_40(),
+      noAttachedSessions: m.workspace_41(),
+      openSession: m.workspace_20(),
       notifications: m.notifications(),
       startup: m.startup(),
       sessionDefaults: m.session_defaults(),
       defaultLanguageBridge: m.default_language_bridge(),
       defaultLanguageBridgeDescription: m.default_language_bridge_description(),
-      languageBridgeOutput: isKorean ? "출력 언어" : "Output language",
-      languageBridgeAuto: isKorean ? "자동 감지" : "Auto detect",
-      saveDefaults: isKorean ? "기본값 저장" : "Save defaults",
+      languageBridgeOutput: m.workspace_42(),
+      languageBridgeAuto: m.workspace_43(),
+      saveDefaults: m.workspace_44(),
       autostartTitle: m.autostart_title(),
       autostartDescription: m.autostart_description(),
       autostartEnable: m.autostart_enable(),
@@ -352,14 +349,14 @@
       savePreset: m.save_preset(),
       noPromptPresets: m.no_prompt_presets(),
       installedPlugins: m.installed_plugins(),
-      marketplaceManagement: isKorean ? "마켓플레이스" : "Marketplaces",
-      marketplacePath: isKorean ? "마켓플레이스 경로" : "Marketplace path",
-      marketplaceName: isKorean ? "원격 마켓플레이스 이름" : "Remote marketplace name",
-      addMarketplace: isKorean ? "추가" : "Add",
-      removeMarketplace: isKorean ? "제거" : "Remove",
-      upgradeMarketplace: isKorean ? "업데이트" : "Upgrade",
-      pluginDetails: isKorean ? "상세" : "Details",
-      uninstall: isKorean ? "제거" : "Uninstall",
+      marketplaceManagement: m.workspace_45(),
+      marketplacePath: m.workspace_46(),
+      marketplaceName: m.workspace_47(),
+      addMarketplace: m.workspace_48(),
+      removeMarketplace: m.workspace_49(),
+      upgradeMarketplace: m.workspace_50(),
+      pluginDetails: m.workspace_51(),
+      uninstall: m.workspace_52(),
       apps: m.apps(),
       appEnabled: m.app_enabled(),
       appDisabled: m.app_disabled(),
@@ -372,22 +369,18 @@
       noDescription: m.no_description(),
       installedSkills: m.installed_skills(),
       noSkills: m.no_local_skills(),
-      nativeSkills: isKorean ? "Codex 스킬" : "Codex skills",
-      nativeHooks: isKorean ? "Codex 훅" : "Codex hooks",
-      nativeSkillsDescription: isKorean
-        ? "Codex app-server가 직접 반환한 활성 스킬과 훅입니다."
-        : "Active skills and hooks returned directly by the Codex app-server.",
-      noNativeHooks: isKorean ? "등록된 훅이 없습니다." : "No hooks returned.",
-      mcpServers: isKorean ? "MCP 서버" : "MCP servers",
-      mcpServersDescription: isKorean
-        ? "Codex가 인식한 MCP 서버와 도구, 리소스, 인증 상태입니다."
-        : "MCP servers, tools, resources, and auth status visible to Codex.",
-      noMcpServers: isKorean ? "MCP 서버가 없습니다." : "No MCP servers returned.",
-      refreshMcp: isKorean ? "새로고침" : "Refresh",
-      oauthLogin: isKorean ? "인증" : "OAuth",
-      tools: isKorean ? "도구" : "Tools",
-      resources: isKorean ? "리소스" : "Resources",
-      resourceTemplates: isKorean ? "리소스 템플릿" : "Resource templates",
+      nativeSkills: m.workspace_53(),
+      nativeHooks: m.workspace_54(),
+      nativeSkillsDescription: m.workspace_55(),
+      noNativeHooks: m.workspace_56(),
+      mcpServers: m.workspace_57(),
+      mcpServersDescription: m.workspace_58(),
+      noMcpServers: m.workspace_59(),
+      refreshMcp: m.workspace_3(),
+      oauthLogin: m.workspace_60(),
+      tools: m.workspace_61(),
+      resources: m.workspace_5(),
+      resourceTemplates: m.workspace_62(),
       openThread: m.open_thread(),
       themeEditor: m.theme_editor(),
       themeEditorDescription: m.theme_editor_description(),
@@ -1427,6 +1420,9 @@
         role="tabpanel"
         transition:fade={{ duration: 160 }}
       >
+        {#if webRole === "owner" || webRole === "admin"}
+          <OllamaSettings />
+        {/if}
         <section class="panel">
           <div class="panel__header">
             <div>
@@ -1481,7 +1477,7 @@
           <div class="config-context-card">
             <div class="config-context-card__header">
               <div>
-                <span>model_context_window</span>
+                <span>{m.operations_25()}</span>
                 <strong>{formatInteger(configModelContextWindow)}</strong>
               </div>
               {#if configModelContextWindow === HUNDRED_M_CONTEXT_WINDOW}

@@ -3,6 +3,7 @@
   import { Activity, AlertTriangle, CheckCircle2, Database, RefreshCw, Search, Server } from "lucide-svelte";
 
   import { api } from "$lib/api";
+  import { m } from "$lib/paraglide/messages.js";
   import { localeSignal } from "$lib/i18n";
   import { getLocale } from "$lib/paraglide/runtime.js";
   import type {
@@ -57,42 +58,36 @@
     const _locale = $localeSignal;
     const isKorean = getLocale() === "ko";
     return {
-      title: isKorean ? "진단" : "Diagnostics",
-      description: isKorean
-        ? "게이트웨이 상태, Codex 프로세스, parser/native 비교를 필요한 때만 확인합니다."
-        : "Inspect gateway status, Codex processes, and parser/native parity only when needed.",
-      refresh: isKorean ? "새로고침" : "Refresh",
-      runtime: isKorean ? "런타임" : "Runtime",
-      resources: isKorean ? "리소스" : "Resources",
-      websocket: isKorean ? "웹소켓" : "WebSocket",
-      processes: isKorean ? "Codex 프로세스" : "Codex processes",
-      noProcesses: isKorean ? "관리 중인 Codex 프로세스가 없습니다." : "No managed Codex processes are running.",
-      activeSessions: isKorean ? "활성 세션" : "Active sessions",
-      queuedSessions: isKorean ? "큐 대기" : "Queued sessions",
-      attentionNeeded: isKorean ? "확인 필요" : "Needs attention",
-      loadedSummaries: isKorean ? "로드된 요약" : "Loaded summaries",
-      recentEvents: isKorean ? "최근 이벤트" : "Recent events",
-      noRecentEvents: isKorean ? "표시할 최근 런타임 이벤트가 없습니다." : "No recent runtime events to show.",
-      parserCompare: isKorean ? "Parser / native 비교" : "Parser / native comparison",
-      parserDescription: isKorean
-        ? "사이드바 hot path는 커스텀 parser를 유지합니다. 이 작업은 선택한 세션만 native Codex와 비교합니다."
-        : "The sidebar hot path stays on the custom parser. This action compares only the selected session with native Codex.",
-      selectedSession: isKorean ? "세션" : "Session",
-      recentTurns: isKorean ? "최근 턴" : "Recent turns",
-      compare: isKorean ? "비교 실행" : "Compare",
-      openSession: isKorean ? "세션 열기" : "Open session",
-      available: isKorean ? "사용 가능" : "Available",
-      unavailable: isKorean ? "사용 불가" : "Unavailable",
-      memoryCurrent: isKorean ? "현재 메모리" : "Memory current",
-      memoryLimit: isKorean ? "메모리 한도" : "Memory limit",
-      oomKills: isKorean ? "OOM kill" : "OOM kills",
-      mismatches: isKorean ? "불일치" : "Mismatches",
-      matched: isKorean ? "일치" : "Matched",
-      viewerLimited: isKorean
-        ? "viewer 권한에서는 민감한 프로세스 및 parser 비교 데이터가 제한됩니다."
-        : "Viewer role receives limited process and parser diagnostics.",
-      nativeUnavailable: isKorean ? "native 결과 없음" : "No native result",
-      localUnavailable: isKorean ? "local parser 결과 없음" : "No local parser result"
+      title: m.workspace_1(),
+      description: m.workspace_2(),
+      refresh: m.workspace_3(),
+      runtime: m.workspace_4(),
+      resources: m.workspace_5(),
+      websocket: m.workspace_6(),
+      processes: m.workspace_7(),
+      noProcesses: m.workspace_8(),
+      activeSessions: m.workspace_9(),
+      queuedSessions: m.workspace_10(),
+      attentionNeeded: m.workspace_11(),
+      loadedSummaries: m.workspace_12(),
+      recentEvents: m.workspace_13(),
+      noRecentEvents: m.workspace_14(),
+      parserCompare: m.workspace_15(),
+      parserDescription: m.workspace_16(),
+      selectedSession: m.workspace_17(),
+      recentTurns: m.workspace_18(),
+      compare: m.workspace_19(),
+      openSession: m.workspace_20(),
+      available: m.workspace_21(),
+      unavailable: m.workspace_22(),
+      memoryCurrent: m.workspace_23(),
+      memoryLimit: m.workspace_24(),
+      oomKills: m.workspace_25(),
+      mismatches: m.workspace_26(),
+      matched: m.workspace_27(),
+      viewerLimited: m.workspace_28(),
+      nativeUnavailable: m.workspace_29(),
+      localUnavailable: m.workspace_30()
     };
   });
 
@@ -233,7 +228,7 @@
       <dl class="diagnostics-kv">
         <div><dt>Codex</dt><dd>{runtimeStatus?.version ?? "-"}</dd></div>
         <div><dt>WebUI</dt><dd>{runtimeStatus?.webuiBuildVersion ?? runtimeStatus?.webuiVersion ?? "-"}</dd></div>
-        <div><dt>Commit</dt><dd>{runtimeStatus?.webuiBuildCommitShort ?? "-"}</dd></div>
+        <div><dt>{m.surface_152()}</dt><dd>{runtimeStatus?.webuiBuildCommitShort ?? "-"}</dd></div>
       </dl>
       {#if runtimeStatus?.issues?.length}
         <div class="diagnostics-issue-list">

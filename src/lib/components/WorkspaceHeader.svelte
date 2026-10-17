@@ -423,7 +423,7 @@
           </button>
           <button class="workspace-open-menu__item ui-animated-button ui-animated-button--soft group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors" onclick={() => { workspaceMenuOpen = false; onOpenProductionTab(); }} type="button">
             <Server size={16} class="text-gray-400 group-hover:text-amber-600" />
-            <span>Production / الإنتاج</span>
+            <span>{m.surface_119()}</span>
           </button>
           <button class="workspace-open-menu__item ui-animated-button ui-animated-button--soft group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors" onclick={() => { workspaceMenuOpen = false; onOpenMemoryTab(); }} type="button">
             <Brain size={16} class="text-gray-400 group-hover:text-amber-600" />

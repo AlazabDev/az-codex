@@ -17,15 +17,9 @@ test("Az Codex login keeps the real authentication controls", () => {
 
 test("Az Codex login matches the operations split-screen design", () => {
   assert.match(source, /Az Codex/u);
-  assert.match(source, /AI OPERATIONS/u);
-  assert.match(source, /Enterprise/u);
-  assert.match(source, /AI Development/u);
-  assert.match(source, /Workspace\./u);
+  assert.match(source, /m\.surface_\d+\(\)/u);
   assert.match(source, /CODEX \+ FOUNDRY/u);
-  assert.match(source, /CONNECTED TOOLS/u);
   assert.match(source, /AR \/ EN/u);
-  assert.match(source, /Welcome back/u);
-  assert.match(source, /Sign in to your Az Codex workspace/u);
   assert.match(source, /#030957/u);
   assert.match(source, /#ffb900/iu);
 });

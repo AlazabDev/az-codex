@@ -3,6 +3,7 @@
   import { Brain, Database, FileText, HardDrive, RefreshCw, RotateCcw, Shield, ToggleLeft, ToggleRight } from "lucide-svelte";
 
   import { api } from "$lib/api";
+  import { m } from "$lib/paraglide/messages.js";
   import { localeSignal } from "$lib/i18n";
   import { getLocale } from "$lib/paraglide/runtime.js";
   import type { CodexMemoryStatusPayload, UserRole } from "$lib/types";
@@ -32,40 +33,34 @@
     const _locale = $localeSignal;
     const isKorean = getLocale() === "ko";
     return {
-      title: isKorean ? "메모리" : "Memory",
-      subtitle: isKorean
-        ? "Codex 메모리 설정과 저장소 상태를 확인하고 네이티브 메모리 작업을 실행합니다."
-        : "Inspect Codex memory settings and storage, then run native memory actions.",
-      refresh: isKorean ? "새로고침" : "Refresh",
-      reset: isKorean ? "메모리 초기화" : "Reset memory",
-      resetConfirm: isKorean
-        ? "Codex 메모리 파일과 단계 데이터를 초기화할까요? 기존 세션의 memory mode는 유지됩니다."
-        : "Reset Codex memory files and stage data? Existing thread memory modes are preserved.",
-      resetDone: isKorean ? "메모리를 초기화했습니다." : "Memory reset completed.",
-      resetDanger: isKorean ? "owner 권한이 필요한 파괴적 작업입니다." : "Destructive action requiring owner access.",
-      settings: isKorean ? "설정" : "Settings",
-      storage: isKorean ? "저장소" : "Storage",
-      paths: isKorean ? "경로" : "Paths",
-      selectedSession: isKorean ? "선택 세션" : "Selected session",
-      noSession: isKorean ? "선택된 세션이 없습니다." : "No selected session.",
-      modeUnknown: isKorean
-        ? "현재 Codex thread/read는 memory mode를 직접 노출하지 않습니다."
-        : "Current Codex thread/read does not expose memory mode directly.",
-      enableSession: isKorean ? "이 세션 메모리 켜기" : "Enable memory for this session",
-      disableSession: isKorean ? "이 세션 메모리 끄기" : "Disable memory for this session",
-      modeUpdated: isKorean ? "세션 memory mode를 업데이트했습니다." : "Session memory mode updated.",
-      viewerLimited: isKorean ? "viewer 권한에서는 메모리 상태만 볼 수 있습니다." : "Viewer role can only inspect memory status.",
-      notLoaded: isKorean ? "메모리 정보를 불러오지 않았습니다." : "Memory status has not been loaded.",
-      files: isKorean ? "파일" : "Files",
-      directories: isKorean ? "디렉터리" : "Directories",
-      bytes: isKorean ? "용량" : "Size",
-      latestModified: isKorean ? "최근 변경" : "Latest change",
+      title: m.workspace_78(),
+      subtitle: m.workspace_79(),
+      refresh: m.workspace_3(),
+      reset: m.workspace_80(),
+      resetConfirm: m.workspace_81(),
+      resetDone: m.workspace_82(),
+      resetDanger: m.workspace_83(),
+      settings: m.workspace_84(),
+      storage: m.workspace_85(),
+      paths: m.workspace_86(),
+      selectedSession: m.workspace_87(),
+      noSession: m.workspace_88(),
+      modeUnknown: m.workspace_89(),
+      enableSession: m.workspace_90(),
+      disableSession: m.workspace_91(),
+      modeUpdated: m.workspace_92(),
+      viewerLimited: m.workspace_93(),
+      notLoaded: m.workspace_94(),
+      files: m.workspace_95(),
+      directories: m.workspace_96(),
+      bytes: m.workspace_97(),
+      latestModified: m.workspace_98(),
       codexHome: "CODEX_HOME",
       configFile: "config.toml",
-      memoryRoot: isKorean ? "메모리 루트" : "Memory root",
-      on: isKorean ? "켜짐" : "On",
-      off: isKorean ? "꺼짐" : "Off",
-      defaultValue: isKorean ? "기본값" : "Default"
+      memoryRoot: m.workspace_99(),
+      on: m.workspace_100(),
+      off: m.workspace_101(),
+      defaultValue: m.workspace_102()
     };
   });
 
@@ -175,15 +170,15 @@
       return [];
     }
     return [
-      ["generateMemories", "Generate memories", settings.generateMemories ? ui.on : ui.off],
-      ["useMemories", "Use memories", settings.useMemories ? ui.on : ui.off],
-      ["disableOnExternalContext", "Disable on external context", settings.disableOnExternalContext ? ui.on : ui.off],
-      ["maxRawMemoriesForConsolidation", "Max raw memories", String(settings.maxRawMemoriesForConsolidation)],
-      ["maxRolloutsPerStartup", "Max rollouts per startup", String(settings.maxRolloutsPerStartup)],
-      ["minRolloutIdleHours", "Min rollout idle hours", String(settings.minRolloutIdleHours)],
+      ["generateMemories", m.surface_153(), settings.generateMemories ? ui.on : ui.off],
+      ["useMemories", m.surface_154(), settings.useMemories ? ui.on : ui.off],
+      ["disableOnExternalContext", m.surface_155(), settings.disableOnExternalContext ? ui.on : ui.off],
+      ["maxRawMemoriesForConsolidation", m.surface_156(), String(settings.maxRawMemoriesForConsolidation)],
+      ["maxRolloutsPerStartup", m.surface_157(), String(settings.maxRolloutsPerStartup)],
+      ["minRolloutIdleHours", m.surface_158(), String(settings.minRolloutIdleHours)],
       ["minRateLimitRemainingPercent", "Min rate-limit remaining", `${settings.minRateLimitRemainingPercent}%`],
-      ["extractModel", "Extract model", settings.extractModel ?? ui.defaultValue],
-      ["consolidationModel", "Consolidation model", settings.consolidationModel ?? ui.defaultValue]
+      ["extractModel", m.surface_159(), settings.extractModel ?? ui.defaultValue],
+      ["consolidationModel", m.surface_160(), settings.consolidationModel ?? ui.defaultValue]
     ];
   }
 </script>

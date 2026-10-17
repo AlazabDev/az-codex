@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { m } from "$lib/paraglide/messages.js";
   import { ArrowRight, ChevronDown, Eye, EyeOff, LockKeyhole, ShieldCheck } from "lucide-svelte";
 
 
@@ -53,34 +54,34 @@
         </div>
         <div>
           <strong>Az Codex</strong>
-          <small>AI OPERATIONS</small>
+          <small>{m.surface_103()}</small>
         </div>
       </header>
 
       <div class="az-login-hero">
-        <p class="az-login-eyebrow"><ShieldCheck size={14} /> AL-AZAB INTELLIGENT WORKSPACE</p>
+        <p class="az-login-eyebrow"><ShieldCheck size={14} /> {m.surface_104()}</p>
         <h1>
-          <span>Enterprise</span>
-          <span class="az-login-accent">AI Development</span>
-          <span>Workspace.</span>
+          <span>{m.surface_105()}</span>
+          <span class="az-login-accent">{m.surface_106()}</span>
+          <span>{m.surface_107()}</span>
         </h1>
         <p class="az-login-description">
-          Build, operate, and manage Alazab systems from one intelligent workspace.
+          {m.surface_108()}
         </p>
       </div>
 
-      <div class="az-login-stats" aria-label="Platform capabilities">
+      <div class="az-login-stats" aria-label={m.surface_114()}>
         <div>
-          <strong>Live</strong>
+          <strong>{m.surface_109()}</strong>
           <span>CODEX + FOUNDRY</span>
         </div>
         <div>
           <strong>MCP</strong>
-          <span>CONNECTED TOOLS</span>
+          <span>{m.surface_110()}</span>
         </div>
         <div>
           <strong>AR / EN</strong>
-          <span>BILINGUAL</span>
+          <span>{m.surface_111()}</span>
         </div>
       </div>
     </div>
@@ -95,13 +96,13 @@
         </div>
         <div>
           <strong>Az Codex</strong>
-          <small>AI OPERATIONS</small>
+          <small>{m.surface_103()}</small>
         </div>
       </div>
 
       <div class="az-login-form-heading">
-        <h2>Welcome back</h2>
-        <p>Sign in to your Az Codex workspace</p>
+        <h2>{m.surface_112()}</h2>
+        <p>{m.surface_113()}</p>
       </div>
 
       <form
@@ -121,12 +122,12 @@
               autocomplete="current-password"
               class="az-login-input"
               data-testid="login-password"
-              placeholder="Enter your password"
+              placeholder={m.surface_115()}
               type={showPassword ? "text" : "password"}
             />
             <button
               class="az-login-password-toggle"
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? m.surface_116() : m.surface_117()}
               onclick={() => (showPassword = !showPassword)}
               type="button"
             >

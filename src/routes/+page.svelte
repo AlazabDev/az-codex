@@ -635,7 +635,7 @@
       noSkills: m.no_local_skills(),
       newTerminal: m.new_terminal(),
       diagnostics:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_1() : locale === "ko"
           ? "진단"
           : locale === "ja"
             ? "Diagnostics"
@@ -643,8 +643,8 @@
               ? "Diagnostics"
               : locale === "zh-Hant"
               ? "Diagnostics"
-              : "Diagnostics",
-      memory: locale === "ko" ? "메모리" : "Memory",
+              : "Diagnostics"),
+      memory: (getLocale() === "ar" ? m.interaction_2() : locale === "ko" ? "메모리" : "Memory"),
       computer: m.computer(),
       computerSnapshotStream: m.computer_snapshot_stream(),
       computerNoFrames: m.computer_no_frames(),
@@ -660,15 +660,15 @@
       restoreThread: m.restore_thread(),
       archiveThread: m.archive_thread(),
       open: m.open(),
-      moveSessionToAccount: locale === "ko" ? "세션 계정 이동" : "Move session to account",
+      moveSessionToAccount: (getLocale() === "ar" ? m.interaction_3() : locale === "ko" ? "세션 계정 이동" : "Move session to account"),
       moveSessionToAccountDescription:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_4() : locale === "ko"
           ? "이 세션을 처리할 Codex 계정을 선택하세요. 세션 파일은 대상 프로필로 이동됩니다."
-          : "Choose the Codex account that should own this session. The session files will be moved to the selected profile.",
-      currentAccount: locale === "ko" ? "현재 계정" : "Current account",
-      targetAccount: locale === "ko" ? "대상 계정" : "Target account",
-      moveSession: locale === "ko" ? "이동" : "Move",
-      refresh: locale === "ko" ? "새로고침" : "Refresh",
+          : "Choose the Codex account that should own this session. The session files will be moved to the selected profile."),
+      currentAccount: (getLocale() === "ar" ? m.interaction_5() : locale === "ko" ? "현재 계정" : "Current account"),
+      targetAccount: (getLocale() === "ar" ? m.interaction_6() : locale === "ko" ? "대상 계정" : "Target account"),
+      moveSession: (getLocale() === "ar" ? m.interaction_7() : locale === "ko" ? "이동" : "Move"),
+      refresh: (getLocale() === "ar" ? m.interaction_8() : locale === "ko" ? "새로고침" : "Refresh"),
       loadingHistory: m.loading_history(),
       historyAvailable: m.history_available(),
       autoLoadPaused: m.auto_load_paused(),
@@ -681,7 +681,7 @@
       rollbackToThisTurn: m.rollback_to_this_turn(),
       rollbackConfirm: m.rollback_confirm(),
       rollbackTargets:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_9() : locale === "ko"
           ? "롤백 대상"
           : locale === "ja"
             ? "Rollback targets"
@@ -689,29 +689,29 @@
               ? "Rollback targets"
               : locale === "zh-Hant"
                 ? "Rollback targets"
-                : "Rollback targets",
+                : "Rollback targets"),
       rollbackTargetsHint:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_10() : locale === "ko"
           ? "되돌릴 기준 메시지를 선택합니다. 파일 변경 자체는 되돌리지 않습니다."
-          : "Choose the message to roll back to. File changes are not reverted.",
+          : "Choose the message to roll back to. File changes are not reverted."),
       rollbackTargetsLoading:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_11() : locale === "ko"
           ? "롤백 대상을 불러오는 중"
-          : "Loading rollback targets",
+          : "Loading rollback targets"),
       rollbackTargetsEmpty:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_12() : locale === "ko"
           ? "되돌릴 수 있는 이전 메시지가 없습니다."
-          : "No earlier messages can be rolled back to.",
+          : "No earlier messages can be rolled back to."),
       rollbackPreviewIncomplete:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_13() : locale === "ko"
           ? "일부 이전 턴은 아직 로드되지 않아 파일 변경 미리보기가 불완전할 수 있습니다."
-          : "Some earlier turns are not loaded, so the file-change preview may be incomplete.",
+          : "Some earlier turns are not loaded, so the file-change preview may be incomplete."),
       rollbackTurnsCount:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_14() : locale === "ko"
           ? "제거할 턴"
-          : "Turns to remove",
+          : "Turns to remove"),
       userMessageTimestamp:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_15() : locale === "ko"
           ? "보낸 시각"
           : locale === "ja"
             ? "送信時刻"
@@ -731,9 +731,9 @@
                           ? "Enviado"
                           : locale === "ru"
                             ? "Отправлено"
-                            : "Sent",
+                            : "Sent"),
       agentReplyTimestamp:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_16() : locale === "ko"
           ? "응답 시각"
           : locale === "ja"
             ? "返信時刻"
@@ -753,7 +753,7 @@
                           ? "Resposta"
                           : locale === "ru"
                             ? "Ответ"
-                            : "Reply",
+                            : "Reply"),
       livePlan: m.live_plan(),
       aggregatedDiff: m.aggregated_diff(),
       openTab: m.open_tab(),
@@ -782,7 +782,7 @@
       ignore: m.ignore(),
       queuedFollowups: m.queued_followups(),
       paused: m.paused(),
-      reorderQueue: locale === "ko" ? "대기 메시지 순서 변경" : "Reorder queued message",
+      reorderQueue: (getLocale() === "ar" ? m.interaction_17() : locale === "ko" ? "대기 메시지 순서 변경" : "Reorder queued message"),
       queueSave: m.save(),
       edit: m.edit(),
       cancel: m.close(),
@@ -791,7 +791,7 @@
       liveTurn: m.live_turn(),
       composerSettings: m.composer_settings(),
       sendShortcut:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_18() : locale === "ko"
           ? "전송 키"
           : locale === "ja"
             ? "送信キー"
@@ -811,9 +811,9 @@
                           ? "Tecla de envio"
                           : locale === "ru"
                             ? "Клавиша отправки"
-                            : "Send key",
+                            : "Send key"),
       sendShortcutDescription:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_19() : locale === "ko"
           ? "Shift+Enter는 줄바꿈으로 유지됩니다."
           : locale === "ja"
             ? "Shift+Enter で改行します。"
@@ -833,9 +833,9 @@
                           ? "Shift+Enter continua inserindo uma nova linha."
                           : locale === "ru"
                             ? "Shift+Enter по-прежнему вставляет новую строку."
-                            : "Shift+Enter still inserts a new line.",
+                            : "Shift+Enter still inserts a new line."),
       sendShortcutCtrlEnter:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_20() : locale === "ko"
           ? "Ctrl+Enter"
           : locale === "ja"
             ? "Ctrl+Enter"
@@ -855,9 +855,9 @@
                           ? "Ctrl+Enter"
                           : locale === "ru"
                             ? "Ctrl+Enter"
-                            : "Ctrl+Enter",
+                            : "Ctrl+Enter"),
       sendShortcutEnter:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_21() : locale === "ko"
           ? "Enter"
           : locale === "ja"
             ? "Enter"
@@ -877,9 +877,9 @@
                           ? "Enter"
                           : locale === "ru"
                             ? "Enter"
-                            : "Enter",
+                            : "Enter"),
       sessionResyncing:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_22() : locale === "ko"
           ? "세션 상태를 다시 동기화하는 중입니다."
           : locale === "ja"
             ? "セッション状態を再同期しています。"
@@ -899,7 +899,7 @@
                           ? "Ressincronizando o estado da sessão."
                           : locale === "ru"
                             ? "Повторная синхронизация состояния сессии."
-                            : "Resynchronizing session state.",
+                            : "Resynchronizing session state."),
       securitySession: m.security_session(),
       addAttachments: m.add_attachments(),
       selectFolder: m.select_folder(),
@@ -921,7 +921,7 @@
       speedFast: m.speed_fast(),
       speedFlex: m.speed_flex(),
       languageBridge:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_23() : locale === "ko"
           ? "언어 브리지"
           : locale === "ja"
             ? "Language bridge"
@@ -929,15 +929,15 @@
               ? "Language bridge"
               : locale === "zh-Hant"
                 ? "Language bridge"
-                : "Language bridge",
+                : "Language bridge"),
       languageBridgeDescription:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_24() : locale === "ko"
           ? "비영어 입력은 영어로 내부 처리하고 최종 답변만 지정 언어로 맞춥니다."
-          : "Handle non-English prompts in English internally and keep the final answer in the selected language.",
+          : "Handle non-English prompts in English internally and keep the final answer in the selected language."),
       languageBridgeOutput:
-        locale === "ko" ? "최종 답변 언어" : "Final answer language",
+        (getLocale() === "ar" ? m.interaction_25() : locale === "ko" ? "최종 답변 언어" : "Final answer language"),
       languageBridgeAuto:
-        locale === "ko" ? "자동: 마지막 사용자 메시지 언어" : "Auto: latest user message language",
+        (getLocale() === "ar" ? m.interaction_26() : locale === "ko" ? "자동: 마지막 사용자 메시지 언어" : "Auto: latest user message language"),
       slashPersonalityDescription: m.slash_personality_description(),
       slashPersonalityUpdated: (personality: string) => m.slash_personality_updated({ personality }),
       slashPersonalityInvalid: m.slash_personality_invalid(),
@@ -971,7 +971,7 @@
       contextCompressionInProgress: m.context_compression_in_progress(),
       contextCompressionCompleted: m.context_compression_completed(),
       manualCompactTitle:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_27() : locale === "ko"
           ? "컨텍스트가 가득 찼습니다"
           : locale === "ja"
             ? "Context window is full"
@@ -983,13 +983,13 @@
                   ? "Fenêtre de contexte pleine"
                   : locale === "es"
                     ? "La ventana de contexto está llena"
-                    : "Context window is full",
+                    : "Context window is full"),
       manualCompactDescription:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_28() : locale === "ko"
           ? "자동 압축이 멈춘 경우 수동으로 컨텍스트 압축을 다시 시작할 수 있습니다."
-          : "If automatic compaction stopped, start context compression manually.",
+          : "If automatic compaction stopped, start context compression manually."),
       manualCompactAction:
-        locale === "ko"
+        (getLocale() === "ar" ? m.interaction_29() : locale === "ko"
           ? "수동 압축 시작"
           : locale === "ja"
             ? "Start manual compact"
@@ -997,15 +997,15 @@
               ? "Start manual compact"
               : locale === "zh-Hant"
                 ? "Start manual compact"
-                : "Start manual compact",
+                : "Start manual compact"),
       manualCompactStarting:
-        locale === "ko" ? "압축 시작 중" : "Starting compact",
+        (getLocale() === "ar" ? m.interaction_30() : locale === "ko" ? "압축 시작 중" : "Starting compact"),
       manualCompactStarted:
-        locale === "ko" ? "컨텍스트 압축을 시작했습니다." : "Context compression started.",
+        (getLocale() === "ar" ? m.interaction_31() : locale === "ko" ? "컨텍스트 압축을 시작했습니다." : "Context compression started."),
       showOlderWorkItems: (count: number) =>
         locale === "ko" ? `이전 작업 과정 ${count}개 더 보기` : `Show ${count} older work items`,
-      showFullMessage: locale === "ko" ? "전체 메시지 보기" : "Show full message",
-      showFullOutput: locale === "ko" ? "전체 출력 보기" : "Show full output",
+      showFullMessage: (getLocale() === "ar" ? m.interaction_32() : locale === "ko" ? "전체 메시지 보기" : "Show full message"),
+      showFullOutput: (getLocale() === "ar" ? m.interaction_33() : locale === "ko" ? "전체 출력 보기" : "Show full output"),
       outputTruncatedPrefix: (count: number) =>
         locale === "ko"
           ? `... 이전 출력 ${count.toLocaleString()}자 생략 ...`
@@ -2965,7 +2965,7 @@
           import("$lib/components/SettingsWorkspace.svelte"),
           new Promise<never>((_, reject) => {
             timeout = setTimeout(
-              () => reject(new Error(getLocale().startsWith("ko") ? "설정 워크스페이스 로딩 시간이 초과됐습니다." : "Timed out loading the settings workspace.")),
+              () => reject(new Error((getLocale() === "ar" ? m.interaction_34() : getLocale().startsWith("ko") ? "설정 워크스페이스 로딩 시간이 초과됐습니다." : "Timed out loading the settings workspace."))),
               15_000
             );
           })
@@ -4502,8 +4502,8 @@
     const recordHeight = (entry?: ResizeObserverEntry) => {
       const borderBoxSize = entry?.borderBoxSize;
       const nextHeight = Array.isArray(borderBoxSize)
-        ? (Array.isArray(borderBoxSize) ? borderBoxSize[0] : borderBoxSize)?.blockSize
-        : borderBoxSize?.blockSize;
+        ? borderBoxSize[0]?.blockSize
+        : undefined;
       queueTranscriptTurnMeasurement(turnId, nextHeight ?? node.getBoundingClientRect().height);
     };
     const observer =
@@ -10427,7 +10427,7 @@
     }
     const trimmedPath = path.trim();
     if (!trimmedPath) {
-      errorText = getLocale().startsWith("ko") ? "서버 credentials JSON 경로를 입력하세요." : "Enter a server credentials JSON path.";
+      errorText = (getLocale() === "ar" ? m.interaction_35() : getLocale().startsWith("ko") ? "서버 credentials JSON 경로를 입력하세요." : "Enter a server credentials JSON path.");
       return;
     }
     try {
@@ -10438,9 +10438,9 @@
       await refreshProfileAccounts(true);
       config = applyLocalComposerPreferencesToConfig(await api.getConfig());
       if (response.type === "authJsonFile" && response.restartRequired) {
-        noticeText = getLocale().startsWith("ko")
+        noticeText = (getLocale() === "ar" ? m.interaction_36() : getLocale().startsWith("ko")
           ? `프로필을 설정 파일에 추가했습니다. WebUI 재시작 후 사용할 수 있습니다.`
-          : "Added the profile to the config file. Restart WebUI to use it.";
+          : "Added the profile to the config file. Restart WebUI to use it.");
       }
     } catch (error) {
       errorText = describeError(error);
@@ -10553,7 +10553,7 @@
       errorText = m.error_forbidden_role();
       return;
     }
-    const nextLabel = window.prompt(getLocale().startsWith("ko") ? "새 계정 라벨을 입력하세요." : "Enter a new account label.", currentLabel);
+    const nextLabel = window.prompt((getLocale() === "ar" ? m.interaction_37() : getLocale().startsWith("ko") ? "새 계정 라벨을 입력하세요." : "Enter a new account label."), currentLabel);
     if (nextLabel === null) {
       return;
     }
@@ -10571,9 +10571,9 @@
       }
       profileAccounts = profileAccounts.map((profile) => (profile.profileId === profileId ? { ...profile, label: trimmed } : profile));
       if (response.restartRequired) {
-        noticeText = getLocale().startsWith("ko")
+        noticeText = (getLocale() === "ar" ? m.interaction_38() : getLocale().startsWith("ko")
           ? "계정 라벨을 설정 파일에 저장했습니다. WebUI 재시작 후 완전히 반영됩니다."
-          : "Saved the account label to the config file. Restart WebUI to fully apply it.";
+          : "Saved the account label to the config file. Restart WebUI to fully apply it.");
       }
     } catch (error) {
       errorText = describeError(error);
@@ -10587,11 +10587,13 @@
     }
     const currentProfileId = config?.profiles.find((profile) => profile.active)?.id ?? activeProfileId;
     if (profileId === currentProfileId) {
-      errorText = getLocale().startsWith("ko") ? "다른 계정으로 전환한 뒤 삭제하세요." : "Switch to another account before deleting it.";
+      errorText = (getLocale() === "ar" ? m.interaction_39() : getLocale().startsWith("ko") ? "다른 계정으로 전환한 뒤 삭제하세요." : "Switch to another account before deleting it.");
       return;
     }
     const confirmed = window.confirm(
-      getLocale().startsWith("ko")
+      getLocale() === "ar"
+        ? `هل تريد إزالة الحساب «${label}» من القائمة؟ ستبقى ملفات الاعتماد المحفوظة.`
+        : getLocale().startsWith("ko")
         ? `"${label}" 계정을 목록에서 삭제할까요? 저장된 auth 파일은 기본적으로 남겨둡니다.`
         : `Remove "${label}" from the account list? Stored auth files are kept by default.`
     );
@@ -10608,9 +10610,9 @@
       }
       profileAccounts = profileAccounts.filter((profile) => profile.profileId !== profileId);
       if (response.restartRequired) {
-        noticeText = getLocale().startsWith("ko")
+        noticeText = (getLocale() === "ar" ? m.interaction_40() : getLocale().startsWith("ko")
           ? "계정을 설정 파일에서 제거했습니다. WebUI 재시작 후 완전히 반영됩니다."
-          : "Removed the account from the config file. Restart WebUI to fully apply it.";
+          : "Removed the account from the config file. Restart WebUI to fully apply it.");
       }
     } catch (error) {
       errorText = describeError(error);
@@ -10763,7 +10765,9 @@
 
     const label = ticket.label ?? ticket.limitName ?? ticket.limitId ?? ticket.id;
     const confirmed = window.confirm(
-      getLocale().startsWith("ko")
+      getLocale() === "ar"
+        ? `هل تريد استخدام تذكرة إعادة التعيين «${label}»؟ لا يمكن التراجع عن ذلك.`
+        : getLocale().startsWith("ko")
         ? `리셋 티켓 "${label}"을 사용합니다. 이 작업은 되돌릴 수 없습니다. 계속할까요?`
         : `Use reset ticket "${label}"? This cannot be undone.`
     );
@@ -10779,15 +10783,15 @@
           : `reset-${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const result = await api.useResetTicket(ticket.id, ticket.limitId, idempotencyKey);
       if (result.outcome === "nothingToReset") {
-        noticeText = getLocale().startsWith("ko")
+        noticeText = (getLocale() === "ar" ? m.interaction_41() : getLocale().startsWith("ko")
           ? "현재 리셋할 사용량 창이 없습니다."
-          : "There is no eligible usage window to reset.";
+          : "There is no eligible usage window to reset.");
       } else if (result.outcome === "noCredit") {
-        noticeText = getLocale().startsWith("ko")
+        noticeText = (getLocale() === "ar" ? m.interaction_42() : getLocale().startsWith("ko")
           ? "사용 가능한 리셋 티켓이 없습니다."
-          : "No reset credits are available.";
+          : "No reset credits are available.");
       } else {
-        noticeText = getLocale().startsWith("ko") ? "리셋 티켓을 사용했습니다." : "Reset ticket used.";
+        noticeText = (getLocale() === "ar" ? m.interaction_43() : getLocale().startsWith("ko") ? "리셋 티켓을 사용했습니다." : "Reset ticket used.");
       }
       await Promise.all([refreshQuota(true), refreshResetTickets(true)]);
     } catch (error) {
@@ -15254,7 +15258,7 @@
                                   })}
                                   type="button"
                                 >
-                                  Decline
+                                  {m.surface_150()}
                                 </button>
                               </div>
                             </div>
@@ -15738,11 +15742,11 @@
                         <button
                           class="composer-compact-trigger ui-animated-button ui-animated-button--soft hidden h-7 shrink-0 items-center gap-1.25 rounded-lg border border-transparent px-2 text-[10px] font-bold text-gray-500 transition-all hover:border-amber-200 hover:bg-amber-50 hover:text-amber-800 sm:h-8 sm:px-2.5 sm:text-[11px] lg:flex"
                           onclick={openProductionTab}
-                          title="Production tools"
+                          title="أدوات الإنتاج"
                           type="button"
                         >
                           <Shield size={14} class="text-amber-600" />
-                          <span>Production</span>
+                          <span>{m.surface_151()}</span>
                         </button>
                       {/if}
                     </div>
@@ -15865,7 +15869,7 @@
                         </div>
                         <div class="space-y-1">
                           <div class="flex items-center justify-between gap-2 px-1">
-                            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">model_context_window</span>
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">{m.operations_25()}</span>
                             <span class="text-[10px] font-semibold text-gray-400">{isHundredMContextEnabled(conversation.preferences) ? "100M" : ui.speedAuto}</span>
                           </div>
                           <div class="composer-settings-segmented grid w-full grid-cols-2 gap-1 rounded-xl border border-gray-200 bg-white p-1 shadow-sm">
@@ -15904,7 +15908,7 @@
                           <label class="px-1 text-[10px] font-bold uppercase tracking-widest text-gray-400" for="composer-effort-select">{m.reasoning()}</label>
                           <select class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-all focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/10 disabled:cursor-not-allowed disabled:opacity-60" disabled={readOnlyRole} id="composer-effort-select" onchange={(event) => setPreference("effort", (event.currentTarget as HTMLSelectElement).value as SessionPreferences["effort"])} value={conversation.preferences.effort ?? (reasoningOptions[0] ?? "medium")}>
                             {#each reasoningOptions as option (option)}
-                              <option value={option}>{option}</option>
+                              <option value={option}>{getLocale() === "ar" ? ({ minimal: "أدنى", low: "منخفض", medium: "متوسط", high: "مرتفع", xhigh: "مرتفع جدًا" } as Record<string, string>)[option] ?? option : option}</option>
                             {/each}
                           </select>
                         </div>
@@ -16322,7 +16326,7 @@
                   type="button"
                   onclick={() => void ensureLazyWorkspaceLoaded("settings")}
                 >
-                  {getLocale().startsWith("ko") ? "다시 시도" : "Retry"}
+                  {getLocale() === "ar" ? "إعادة المحاولة" : getLocale().startsWith("ko") ? "다시 시도" : "Retry"}
                 </button>
               </div>
             {:else}
