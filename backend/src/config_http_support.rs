@@ -152,6 +152,17 @@ pub(crate) async fn config_models_payload(
     state: &AppState,
     profile_id: &str,
 ) -> ApiResult<Vec<Value>> {
+    // A custom Ollama profile must never advertise the OpenAI fallback catalog.
+    if profile_id == "ollama" {
+        let (_, profile) = resolve_runtime_profile_entry(&state.config, profile_id);
+        let defaults = read_codex_toml_defaults(&profile.codex_home);
+        return Ok(defaults.model.map(|model| vec![json!({
+            "id": model, "displayName": model, "description": "Ollama",
+            "defaultReasoningEffort": "low", "supportedReasoningEfforts": ["low", "medium", "high"],
+            "additionalSpeedTiers": [], "inputModalities": ["text"],
+            "supportsPersonality": false, "isDefault": true
+        })]).unwrap_or_default());
+    }
     let response = config_app_server_request(
         state,
         profile_id,

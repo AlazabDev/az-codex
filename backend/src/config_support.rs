@@ -576,9 +576,7 @@ fn runtime_profiles_from_shapes(
     (resolved_default_profile_id, profiles)
 }
 
-pub(crate) fn runtime_profiles_snapshot(
-    config: &Config,
-) -> (String, HashMap<String, RuntimeProfile>) {
+fn base_runtime_profiles_snapshot(config: &Config) -> (String, HashMap<String, RuntimeProfile>) {
     if env::var("CODEX_WEBUI_PROFILES_JSON")
         .ok()
         .is_some_and(|value| !value.trim().is_empty())
@@ -1473,4 +1471,10 @@ fn resolve_project_root(cwd: &PathBuf) -> PathBuf {
     }
 
     cwd.clone()
+}
+
+pub(crate) fn runtime_profiles_snapshot(
+    config: &Config,
+) -> (String, HashMap<String, RuntimeProfile>) {
+    with_ollama_profile(base_runtime_profiles_snapshot(config), &config.data_dir)
 }

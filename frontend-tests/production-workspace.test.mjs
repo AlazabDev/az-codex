@@ -28,8 +28,8 @@ test("chat surface links the production workspace without replacing chat", async
   assert.match(page, /ProductionWorkspace\.svelte/u);
   assert.match(page, /activeWorkspaceTabId === "production"/u);
   assert.match(page, /onOpenProductionTab=\{openProductionTab\}/u);
-  assert.match(page, /title="Production tools"/u);
-  assert.match(header, /Production \/ الإنتاج/u);
+  assert.match(page, /title="أدوات الإنتاج"/u);
+  assert.match(header, /m\.surface_\d+\(\)/u);
   assert.match(tabs, /tab\.kind === "production"/u);
 });
 

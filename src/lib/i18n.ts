@@ -31,7 +31,13 @@ function applyLocaleToDocument(locale: Locale) {
 }
 
 export function syncLocale(locale?: string | null) {
-  const nextLocale = ((locale?.trim() || getLocale()) as Locale) ?? "en";
+  // Migrate existing browser-language defaults once; explicit language choices remain respected.
+  const hasPreference = browser && localStorage.getItem("az-codex.locale-selected") === "true";
+  const nextLocale = (locale?.trim() || (hasPreference ? getLocale() : "ar")) as Locale;
+  if (browser && !hasPreference) {
+    void setLocale(nextLocale, { reload: false });
+    localStorage.setItem("az-codex.locale-selected", "true");
+  }
   activeLocale.set(nextLocale);
   applyLocaleToDocument(nextLocale);
   localeSignal.update((value) => value + 1);
@@ -42,6 +48,7 @@ export function getClientLocale() {
 }
 
 export function updateLocale(locale: Locale) {
+  if (browser) localStorage.setItem("az-codex.locale-selected", "true");
   void setLocale(locale, { reload: false });
   syncLocale(locale);
 }

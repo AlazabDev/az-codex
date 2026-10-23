@@ -342,16 +342,14 @@
       quotaUsage: m.quota_usage(),
       quota5h: m.quota_5h(),
       quotaWeekly: m.quota_weekly(),
-      resetTickets: isKorean ? "리셋 티켓" : "Reset tickets",
-      refreshResetTickets: isKorean ? "리셋 티켓 새로고침" : "Refresh reset tickets",
-      useResetTicket: isKorean ? "사용" : "Use",
+      resetTickets: m.workspace_63(),
+      refreshResetTickets: m.workspace_64(),
+      useResetTicket: m.workspace_65(),
       resetTicketsAvailable: (count: number) =>
         isKorean ? `${count}개 사용 가능` : `${count} available`,
-      resetTicketUnsupported: isKorean
-        ? "현재 Codex가 리셋 티켓 정보를 노출하지 않습니다."
-        : "This Codex build does not expose reset-ticket records.",
-      resetTicketEmpty: isKorean ? "사용 가능한 리셋 티켓이 없습니다." : "No reset tickets available.",
-      resetTicketUnavailable: isKorean ? "사용 불가" : "Unavailable",
+      resetTicketUnsupported: m.workspace_66(),
+      resetTicketEmpty: m.workspace_67(),
+      resetTicketUnavailable: m.workspace_22(),
       runtime: m.runtime(),
       loading: m.loading(),
       version: m.version(),
@@ -371,24 +369,20 @@
       close: m.close(),
       refreshQuota: m.refresh_quota(),
       switchAccount: m.switch_account(),
-      renameAccount: isKorean ? "계정 라벨 변경" : "Rename account",
-      deleteAccount: isKorean ? "계정 삭제" : "Delete account",
+      renameAccount: m.workspace_68(),
+      deleteAccount: m.workspace_69(),
       signInAction: m.sign_in_action(),
       signOut: m.sign_out(),
       connected: m.connected(),
       signInRequired: m.sign_in_required(),
-      serverCredentialsJson: isKorean ? "서버 credentials JSON" : "Server credentials JSON",
-      serverCredentialsJsonPlaceholder: isKorean ? "~/.codex/auth.json 또는 /path/to/auth.json" : "~/.codex/auth.json or /path/to/auth.json",
-      serverCredentialsJsonDescription: isKorean
-        ? "브라우저 파일이 아니라 서버 파일시스템의 Codex auth.json을 현재 프로필로 가져옵니다."
-        : "Imports a Codex auth.json from the server filesystem into the active profile.",
-      createProfileFromCredentials: isKorean ? "새 프로필로 가져오기" : "Import as new profile",
-      createProfileFromCredentialsDescription: isKorean
-        ? "설정 파일에 프로필을 추가합니다. 새 프로필은 WebUI 재시작 후 선택할 수 있습니다."
-        : "Adds a profile to the config file. The new profile is selectable after restarting WebUI.",
-      newProfileLabelPlaceholder: isKorean ? "프로필 이름(선택)" : "Profile label (optional)",
-      importCredentials: isKorean ? "가져오기" : "Import",
-      moveSessionToAccount: isKorean ? "세션 계정 이동" : "Move session to account",
+      serverCredentialsJson: m.workspace_70(),
+      serverCredentialsJsonPlaceholder: m.workspace_71(),
+      serverCredentialsJsonDescription: m.workspace_72(),
+      createProfileFromCredentials: m.workspace_73(),
+      createProfileFromCredentialsDescription: m.workspace_74(),
+      newProfileLabelPlaceholder: m.workspace_75(),
+      importCredentials: m.workspace_76(),
+      moveSessionToAccount: m.workspace_77(),
       localRuntime: m.local_runtime(),
       currentDarkMode: m.current_dark_mode(),
       currentLightMode: m.current_light_mode(),
@@ -1942,7 +1936,7 @@
                     <div class="flex shrink-0 items-center gap-1">
                       {#if profile.active}
                         <span class="sidebar-flyout-badge rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-amber-700">
-                          {ui.connected}
+                          {m.profile_selected()}
                         </span>
                       {/if}
                       <button
